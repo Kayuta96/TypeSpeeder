@@ -1,4 +1,5 @@
 package se.ju23.typespeeder;
+import java.util.Scanner;
 
 public class Menu {
 
@@ -20,6 +21,15 @@ public class Menu {
                 System.out.println(menyChoice);
 
             int userInput = scanner.nextInt();
+
+            switch (userInput) {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+
+            }
         }
     }
 }
