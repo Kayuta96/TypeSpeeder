@@ -1,10 +1,13 @@
 package se.ju23.typespeeder;
 import java.util.Scanner;
 
-public class Menu {
+public class Menu implements MenuService {
 
 
     public static void main(String[] args) {
+        Menu menu = new Menu();
+        menu.displayMenu();
+
         Scanner scanner = new Scanner(System.in);
 
         String[] menyChoices = {
