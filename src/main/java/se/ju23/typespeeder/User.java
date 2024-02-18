@@ -11,7 +11,7 @@ public class User {
     public User(String username, String passworrd, String playerName) {
         this.username = username;
         this.password = password;
-        this.playerName = playerName
+        this.playerName = playerName;
     }
     // Getter och setter för användarnamn
     public String getUsername() {
