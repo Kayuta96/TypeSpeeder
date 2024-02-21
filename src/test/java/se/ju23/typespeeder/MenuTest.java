@@ -1,6 +1,9 @@
 package se.ju23.typespeeder;
 
 import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,5 +96,20 @@ public class MenuTest {
         assertTrue(count >= 5, "The menu should print out at least 5 alternatives.");
     }
 
+    @Test
+    public void testUserCanChooseSwedishLanguage() {
+        String input = "svenska\n";
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        System.setIn(in);
+
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+        Menu menu = new Menu();
+        menu.displayMenu();
+
+        String consoleOutput = outContent.toString();
+        assertTrue(consoleOutput.contains("Välj språk (svenska/engelska):"), "Menu should prompt for language selection.");
+        assertTrue(consoleOutput.contains("Svenska valt."), "Menu should confirm Swedish language selection.");
+    }
 
 }
