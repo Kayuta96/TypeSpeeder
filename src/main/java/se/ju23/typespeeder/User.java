@@ -1,8 +1,16 @@
 package se.ju23.typespeeder;
-import java.util.ArrayList;
-import java.util.List;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String username;
     private String password;
     private String playerName;
@@ -41,33 +49,13 @@ public class User {
         this.playerName = playerName;
     }
 
-    // Metod för att se och verifiera inloggningsuppgifter
-    public boolean authenticator(String enteredUsername, String enteredPassword) {
-        return username.equals(enteredUsername) && password.equals(enteredPassword);
-    }
-
     @Override
     public String toString() {
         return "User{" +
-                "username='" + username + '\'' +
+                "id=" + id +
+                ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", playerName='" + playerName + '\'' +
                 '}';
-    }
-
-    public static void main(String[] args) {
-        List<User> userList = new ArrayList<>();
-        userList.add(new User("Admin", "password", "Conny"));
-
-        //Inloggning
-        String enteredUsername = "Admin";
-        String enteredPassword = "password";
-
-        for (User user : userList) {
-            if (user.authenticator(enteredUsername, enteredPassword)) {
-                System.out.println("Inloggning lyckades för användare: " + user.getPlayerName());
-                break;
-            }
-        }
     }
 }

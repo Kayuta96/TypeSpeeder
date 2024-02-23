@@ -1,27 +1,27 @@
 package se.ju23.typespeeder;
-import java.util.ArrayList;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Scanner;
 
+@Service
 public class Menu implements MenuService {
-    private List<User> userList;
+    private final UserRepository userRepository;
     private User loggedInUser;
     private Language language;
 
-    public static void main(String[] args) {
-        Menu menu = new Menu();
-        menu.start();
-    }
-
-    public Menu() {
-        this.userList = new ArrayList<>();
-        userList.add(new User("Admin", "password", "Conny"));
+    @Autowired
+    public Menu(UserRepository userRepository) {
+        this.userRepository = userRepository;
         this.loggedInUser = null;
-
         chooseLanguage();
     }
 
     public void start() {
+        chooseLanguage();
+
         Scanner scanner = new Scanner(System.in);
 
         while (loggedInUser == null) {
@@ -31,16 +31,12 @@ public class Menu implements MenuService {
             System.out.println("Enter your password:");
             String enteredPassword = scanner.next();
 
-            for (User user : userList) {
-                if (user.authenticator(enteredUsername, enteredPassword)) {
-                    loggedInUser = user;
-                    System.out.println("Login successful. Welcome, " + user.getPlayerName() + "!");
-                    break;
-                }
-            }
+            loggedInUser = userRepository.findByUsernameAndPassword(enteredUsername, enteredPassword);
 
             if (loggedInUser == null) {
                 System.out.println("Login failed. Please try again.");
+            } else {
+                System.out.println("Login successful. Welcome, " + loggedInUser.getPlayerName() + "!");
             }
         }
 
@@ -70,7 +66,8 @@ public class Menu implements MenuService {
         }
     }
 
-    private void chooseLanguage() {
+
+    public void chooseLanguage() {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Choose language / Välj språk:");
         System.out.println("1. English");
@@ -88,12 +85,12 @@ public class Menu implements MenuService {
             default:
                 System.out.println("Invalid choice. Will default to English!");
                 language = Language.ENGLISH;
-                break;
         }
     }
 
     @Override
     public void displayMenu() {
+        chooseLanguage();
         System.out.println("Options:");
         List<String> menuOptions = getMenuOptions();
         for (String menuOption : menuOptions) {
@@ -122,23 +119,17 @@ public class Menu implements MenuService {
     }
 
     private String getWelcomeMessage() {
-        switch (language) {
-            case SWEDISH:
-                return "Välkommen till huvudmenyn, " + (loggedInUser != null ? loggedInUser.getPlayerName() : "") + "!";
-            case ENGLISH:
-            default:
-                return "Welcome to the main menu, " + (loggedInUser != null ? loggedInUser.getPlayerName() : "") + "!";
-        }
+        return switch (language) {
+            case SWEDISH -> "Välkommen till huvudmenyn, " + (loggedInUser != null ? loggedInUser.getPlayerName() : "") + "!";
+            default -> "Welcome to the main menu, " + (loggedInUser != null ? loggedInUser.getPlayerName() : "") + "!";
+        };
     }
 
     private String getInvalidChoiceMessage() {
-        switch (language) {
-            case SWEDISH:
-                return "Ogiltigt val. Välj mellan 1-5.";
-            case ENGLISH:
-            default:
-                return "Invalid choice. Choose between 1-5.";
-        }
+        return switch (language) {
+            case SWEDISH -> "Ogiltigt val. Välj mellan 1-5.";
+            default -> "Invalid choice. Choose between 1-5.";
+        };
     }
 
     private void logoutUser() {
