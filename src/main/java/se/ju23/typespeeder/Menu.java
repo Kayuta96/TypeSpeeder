@@ -8,10 +8,10 @@ import java.util.Scanner;
 
 @Service
 public class Menu implements MenuService {
-    private final UserRepository userRepository;
+    private UserRepository userRepository;
     private User loggedInUser;
     private Language language;
-    private final Scanner scanner;
+    private Scanner scanner;
 
     @Autowired
     public Menu(UserRepository userRepository) {
@@ -19,6 +19,10 @@ public class Menu implements MenuService {
         this.loggedInUser = null;
         this.scanner = new Scanner(System.in);
         chooseLanguage();
+    }
+
+    public Menu() {
+
     }
 
     public void start() {

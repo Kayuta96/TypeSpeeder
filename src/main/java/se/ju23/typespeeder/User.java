@@ -15,14 +15,16 @@ public class User {
     private String password;
     private String playerName;
 
-    //Konstruktor
+    public User() {
+
+    }
+
     public User(String username, String password, String playerName) {
         this.username = username;
         this.password = password;
         this.playerName = playerName;
     }
 
-    // Getter och setter för användarnamn
     public String getUsername() {
         return username;
     }
@@ -31,7 +33,6 @@ public class User {
         this.username = username;
     }
 
-    // Getter och setter för lösenord
     public String getPassword() {
         return password;
     }
@@ -40,7 +41,6 @@ public class User {
         this.password = password;
     }
 
-    // Getter och setter för spelarnamn
     public String getPlayerName() {
         return playerName;
     }
