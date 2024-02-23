@@ -8,11 +8,12 @@ public class User {
     private String playerName;
 
     //Konstruktor
-    public User(String username, String passworrd, String playerName) {
+    public User(String username, String password, String playerName) {
         this.username = username;
         this.password = password;
         this.playerName = playerName;
     }
+
     // Getter och setter för användarnamn
     public String getUsername() {
         return username;
@@ -40,7 +41,7 @@ public class User {
         this.playerName = playerName;
     }
 
-    //Metod för att se och verifiera inloggninsuppgifter
+    // Metod för att se och verifiera inloggningsuppgifter
     public boolean authenticator(String enteredUsername, String enteredPassword) {
         return username.equals(enteredUsername) && password.equals(enteredPassword);
     }
@@ -55,7 +56,7 @@ public class User {
     }
 
     public static void main(String[] args) {
-        List<User> userList = new Arraylist<>();
+        List<User> userList = new ArrayList<>();
         userList.add(new User("Admin", "password", "Conny"));
 
         //Inloggning
