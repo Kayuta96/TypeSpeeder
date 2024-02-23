@@ -4,5 +4,4 @@ import java.util.List;
 public interface MenuService {
     void displayMenu();
     List<String> getMenuOptions();
-    void chooseLanguage();
 }

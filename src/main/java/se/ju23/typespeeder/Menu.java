@@ -11,19 +11,17 @@ public class Menu implements MenuService {
     private final UserRepository userRepository;
     private User loggedInUser;
     private Language language;
+    private final Scanner scanner;
 
     @Autowired
     public Menu(UserRepository userRepository) {
         this.userRepository = userRepository;
         this.loggedInUser = null;
+        this.scanner = new Scanner(System.in);
         chooseLanguage();
     }
 
     public void start() {
-        chooseLanguage();
-
-        Scanner scanner = new Scanner(System.in);
-
         while (loggedInUser == null) {
             System.out.println(getWelcomeMessage());
             System.out.println("Enter your username:");
@@ -66,9 +64,7 @@ public class Menu implements MenuService {
         }
     }
 
-
-    public void chooseLanguage() {
-        Scanner scanner = new Scanner(System.in);
+    private void chooseLanguage() {
         System.out.println("Choose language / Välj språk:");
         System.out.println("1. English");
         System.out.println("2. Svenska");
@@ -90,7 +86,6 @@ public class Menu implements MenuService {
 
     @Override
     public void displayMenu() {
-        chooseLanguage();
         System.out.println("Options:");
         List<String> menuOptions = getMenuOptions();
         for (String menuOption : menuOptions) {
