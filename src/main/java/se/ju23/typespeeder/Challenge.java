@@ -16,11 +16,12 @@ public class Challenge {
 
     public void startChallenge() {
         String[] wordsToType = generateWords(10);
-        String[] highlightedWords = highlightWords(wordsToType);
+        StringBuilder[] highlightedWords = highlightWords(wordsToType);
 
         System.out.println("Type the following words as fast as you can:");
 
         long startTime = System.currentTimeMillis();
+        int failedAttempts = 0;
 
         for (int i = 0; i < wordsToType.length; i++) {
             boolean typedCorrectly = false;
@@ -32,6 +33,7 @@ public class Challenge {
                     typedCorrectly = true;
                 } else {
                     System.out.println("Incorrect! Retype the word.");
+                    failedAttempts++;
                 }
             } while (!typedCorrectly);
         }
@@ -42,9 +44,10 @@ public class Challenge {
         int wordsPerMinute = calculateWordsPerMinute(wordsToType.length, totalTime);
         System.out.println("Congratulations! You completed the challenge.");
         System.out.println("Your typing speed: " + wordsPerMinute + " words per minute.");
+        System.out.println("Number of failed attempts: " + failedAttempts);
     }
 
-    private String[] highlightWords(String[] words) {
+    private StringBuilder[] highlightWords(String[] words) {
         StringBuilder[] highlightedWords = new StringBuilder[words.length];
         for (int i = 0; i < words.length; i++) {
             highlightedWords[i] = new StringBuilder();
