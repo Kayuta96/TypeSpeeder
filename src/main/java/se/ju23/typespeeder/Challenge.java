@@ -6,77 +6,117 @@ import java.util.Scanner;
 
 public class Challenge {
     private static final Random random = new Random();
-    private static final List<String> dictionary = List.of(
-            "apple", "banana", "chocolate", "programming", "challenge", "keyboard", "algorithm", "java", "spring", "developer"
-    );
+    private static final String LETTERS = "abcdefghijklmnopqrstuvwxyz";
+    private static final String SPECIAL_CHARACTERS = "@&?#";
 
     private static final String ANSI_RESET = "\u001B[0m";
     private static final String ANSI_RED = "\u001B[31m";
     private static final String ANSI_GREEN = "\u001B[32m";
 
     public void startChallenge() {
-        String[] wordsToType = generateWords(10);
-        StringBuilder[] highlightedWords = highlightWords(wordsToType);
+        Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Type the following words as fast as you can:");
+        System.out.println("Select a challenge type:");
+        System.out.println("1. Letters Challenge");
+        System.out.println("2. Words Challenge");
+        System.out.println("3. Special Characters Challenge");
 
-        long startTime = System.currentTimeMillis();
+        int challengeType = scanner.nextInt();
+        scanner.nextLine();
+
+        switch (challengeType) {
+            case 1:
+                lettersToType(generateRandomLetters(50));
+                break;
+            case 2:
+                lettersToType(generateRandomWords(5));
+                break;
+            case 3:
+                lettersToType(generateTextWithSpecialCharacters());
+                break;
+            default:
+                System.out.println("Invalid challenge type. Exiting...");
+        }
+    }
+
+    private void lettersToType(String text) {
+        String highlightedText = highlightText(text);
+
+        System.out.println("Type the following as fast as you can:");
+        System.out.println(highlightedText);
+
+        long startTime = System.nanoTime();
+        String userTypedText = getUserInput();
+        long endTime = System.nanoTime();
+
         int failedAttempts = 0;
 
-        for (int i = 0; i < wordsToType.length; i++) {
-            boolean typedCorrectly = false;
-            do {
-                System.out.print(highlightedWords[i] + " ");
-                String userTypedWord = getUserInput();
+        while (!userTypedText.equals(text)) {
+            System.out.println("Incorrect. Retype the entire challenge:");
 
-                if (userTypedWord.equals(wordsToType[i])) {
-                    typedCorrectly = true;
-                } else {
-                    System.out.println("Incorrect! Retype the word.");
-                    failedAttempts++;
-                }
-            } while (!typedCorrectly);
+            startTime = System.nanoTime();
+            userTypedText = getUserInput();
+            endTime = System.nanoTime();
+
+            failedAttempts++;
         }
 
-        long endTime = System.currentTimeMillis();
-        long totalTime = endTime - startTime;
-
-        int wordsPerMinute = calculateWordsPerMinute(wordsToType.length, totalTime);
-        System.out.println("Congratulations! You completed the challenge.");
-        System.out.println("Your typing speed: " + wordsPerMinute + " words per minute.");
-        System.out.println("Number of failed attempts: " + failedAttempts);
+        boolean typedCorrectly = userTypedText.equals(text);
+        System.out.println(typedCorrectly ? "Congratulations! You typed it correctly." : "Challenge completed with errors.");
+        printResult(text.length(), startTime, endTime, failedAttempts);
     }
 
-    private StringBuilder[] highlightWords(String[] words) {
-        StringBuilder[] highlightedWords = new StringBuilder[words.length];
-        for (int i = 0; i < words.length; i++) {
-            highlightedWords[i] = new StringBuilder();
-            for (char c : words[i].toCharArray()) {
-                if (random.nextBoolean()) {
-                    highlightedWords[i].append(ANSI_RED).append(c).append(ANSI_RESET);
-                } else {
-                    highlightedWords[i].append(ANSI_GREEN).append(c).append(ANSI_RESET);
-                }
-            }
+    private String generateRandomLetters(int count) {
+        StringBuilder randomLetters = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            randomLetters.append(LETTERS.charAt(random.nextInt(LETTERS.length())));
         }
-        return highlightedWords;
+        return randomLetters.toString();
     }
 
-    private String[] generateWords(int wordCount) {
-        String[] words = new String[wordCount];
+    private String generateRandomWords(int wordCount) {
+        StringBuilder randomWords = new StringBuilder();
         for (int i = 0; i < wordCount; i++) {
-            words[i] = dictionary.get(random.nextInt(dictionary.size()));
+            randomWords.append(WordRepository.getRandomWord()).append(" ");
         }
-        return words;
+        return randomWords.toString().trim();
+    }
+
+    private String generateTextWithSpecialCharacters() {
+        StringBuilder text = new StringBuilder();
+        int textLength = random.nextInt(50) + 50;
+        for (int i = 0; i < textLength; i++) {
+            char currentChar;
+            if (random.nextBoolean()) {
+                currentChar = SPECIAL_CHARACTERS.charAt(random.nextInt(SPECIAL_CHARACTERS.length()));
+            } else {
+                currentChar = (char) (random.nextInt(26) + 'a');
+            }
+            text.append(currentChar);
+        }
+        return text.toString();
+    }
+
+    private String highlightText(String text) {
+        StringBuilder highlightedText = new StringBuilder();
+        for (char c : text.toCharArray()) {
+            highlightedText.append(random.nextBoolean() ? ANSI_RED : ANSI_GREEN).append(c).append(ANSI_RESET);
+        }
+        return highlightedText.toString();
     }
 
     private String getUserInput() {
         Scanner scanner = new Scanner(System.in);
-        return scanner.next();
+        return scanner.nextLine();
     }
 
-    private int calculateWordsPerMinute(int wordsTyped, long totalTimeMillis) {
-        int wordsPerMinute = (int) ((wordsTyped / (double) totalTimeMillis) * 60000);
-        return wordsPerMinute;
+    private void printResult(int inputLength, long startTime, long endTime, int failedAttempts) {
+        long totalTime = endTime - startTime;
+        int inputPerMinute = (int) ((inputLength / (double) totalTime) * 60000000000L);
+        System.out.println("Your typing speed: " + inputPerMinute + " per minute.");
+        System.out.println("Number of failed attempts: " + failedAttempts);
+    }
+
+    public void lettersToType() {
     }
 }
