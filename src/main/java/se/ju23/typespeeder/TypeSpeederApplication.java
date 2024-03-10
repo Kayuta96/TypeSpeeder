@@ -12,6 +12,7 @@ public class TypeSpeederApplication {
         SpringApplication.run(TypeSpeederApplication.class, args);
     }
 
+
     @Bean
     public CommandLineRunner run(Menu menu) {
         return args -> menu.start();

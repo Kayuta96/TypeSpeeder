@@ -13,12 +13,15 @@ public class Menu implements MenuService {
     private Language language;
     private Scanner scanner;
 
-    @Autowired
-    public Menu(UserRepository userRepository) {
+    private Menu(UserRepository userRepository, Scanner scanner) {
         this.userRepository = userRepository;
         this.loggedInUser = null;
-        this.scanner = new Scanner(System.in);
+        this.scanner = scanner;
         chooseLanguage();
+    }
+
+    public Menu(UserRepository userRepository) {
+        this(userRepository, new Scanner(System.in));
     }
 
     public Menu() {
@@ -26,6 +29,7 @@ public class Menu implements MenuService {
     }
 
     public void start() {
+
         while (loggedInUser == null) {
             System.out.println(getWelcomeMessage());
             System.out.println("Enter your username:");
@@ -51,12 +55,16 @@ public class Menu implements MenuService {
 
             switch (userInput) {
                 case 1:
+                    // Implementera logik för alternativ 1
                     break;
                 case 2:
+                    // Implementera logik för alternativ 2
                     break;
                 case 3:
+                    // Implementera logik för alternativ 3
                     break;
                 case 4:
+                    // Implementera logik för alternativ 4
                     break;
                 case 5:
                     logoutUser();
@@ -69,22 +77,29 @@ public class Menu implements MenuService {
     }
 
     private void chooseLanguage() {
-        System.out.println("Choose language / Välj språk:");
-        System.out.println("1. English");
-        System.out.println("2. Svenska");
+        System.out.println("Välj språk (svenska/engelska):");
+        System.out.println("1. Svenska");
+        System.out.println("2. English");
 
-        int languageChoice = scanner.nextInt();
+        int languageChoice;
+        try {
+            languageChoice = Integer.parseInt(scanner.next());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Defaulting to Swedish!");
+            language = Language.ENGLISH;
+            return;
+        }
 
         switch (languageChoice) {
             case 1:
-                language = Language.ENGLISH;
-                break;
-            case 2:
                 language = Language.SWEDISH;
                 break;
-            default:
-                System.out.println("Invalid choice. Will default to English!");
+            case 2:
                 language = Language.ENGLISH;
+                break;
+            default:
+                System.out.println("Invalid choice. Defaulting to Swedish!");
+                language = Language.SWEDISH;
         }
     }
 
@@ -99,22 +114,34 @@ public class Menu implements MenuService {
 
     @Override
     public List<String> getMenuOptions() {
-        return switch (language) {
-            case SWEDISH -> List.of(
-                    "1. Spela",
-                    "2. Ranking",
-                    "3. Hantera konto",
-                    "4. Inställningar",
-                    "5. Logga ut"
-            );
-            default -> List.of(
+        if (this.language != null) {
+            return switch (language) {
+                case SWEDISH -> List.of(
+                        "1. Spela",
+                        "2. Ranking",
+                        "3. Hantera konto",
+                        "4. Inställningar",
+                        "5. Logga ut"
+                );
+                default -> List.of(
+                        "1. Play",
+                        "2. Ranking",
+                        "3. Manage account",
+                        "4. Settings",
+                        "5. Logout"
+                );
+            };
+        } else {
+            System.out.println("Language is null. Defaulting to English!");
+            language = Language.ENGLISH;
+            return List.of(
                     "1. Play",
                     "2. Ranking",
                     "3. Manage account",
                     "4. Settings",
                     "5. Logout"
             );
-        };
+        }
     }
 
     private String getWelcomeMessage() {
