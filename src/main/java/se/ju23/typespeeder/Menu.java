@@ -81,21 +81,16 @@ public class Menu implements MenuService {
         System.out.println("1. Svenska");
         System.out.println("2. English");
 
-        int languageChoice;
-        try {
-            languageChoice = Integer.parseInt(scanner.next());
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Defaulting to Swedish!");
-            language = Language.ENGLISH;
-            return;
-        }
+        String languageChoice = scanner.next().toLowerCase(); // Läs in sträng och konvertera till små bokstäver
 
         switch (languageChoice) {
-            case 1:
+            case "svenska", "1":
                 language = Language.SWEDISH;
+                System.out.println("Svenska valt.");
                 break;
-            case 2:
+            case "english", "2":
                 language = Language.ENGLISH;
+                System.out.println("English chosen.");
                 break;
             default:
                 System.out.println("Invalid choice. Defaulting to Swedish!");
