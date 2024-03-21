@@ -3,6 +3,7 @@ package se.ju23.typespeeder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -13,62 +14,143 @@ public class Menu implements MenuService {
     private Language language;
     private Scanner scanner;
 
-    private Menu(UserRepository userRepository, Scanner scanner) {
-        this.userRepository = userRepository;
-        this.loggedInUser = null;
-        this.scanner = scanner;
-        chooseLanguage();
-    }
-
+    @Autowired
     public Menu(UserRepository userRepository) {
-        this(userRepository, new Scanner(System.in));
+        this.userRepository = userRepository;
+        this.scanner = new Scanner(System.in);
     }
 
     public Menu() {
-
+        this.scanner = new Scanner(System.in);
     }
 
     public void start() {
-
-        while (loggedInUser == null) {
-            System.out.println(getWelcomeMessage());
-            System.out.println("Enter your username:");
-            String enteredUsername = scanner.next();
-            System.out.println("Enter your password:");
-            String enteredPassword = scanner.next();
-
-            loggedInUser = userRepository.findByUsernameAndPassword(enteredUsername, enteredPassword);
-
-            if (loggedInUser == null) {
-                System.out.println("Login failed. Please try again.");
-            } else {
-                System.out.println("Login successful. Welcome, " + loggedInUser.getPlayerName() + "!");
-            }
-        }
-
+        chooseLanguage();
         while (true) {
             System.out.println("------------");
-            System.out.println(getWelcomeMessage());
-            displayMenu();
+            System.out.println((language == Language.SWEDISH ? "Välkommen till menyn!" : "Welcome to the menu!"));
+            System.out.println((language == Language.SWEDISH ? "Vad vill du göra?" : "What would you like to do?"));
+            System.out.println("1. " + (language == Language.SWEDISH ? "Logga in" : "Login"));
+            System.out.println("2. " + (language == Language.SWEDISH ? "Registrera nytt konto" : "Register new account"));
+            System.out.println("3. " + (language == Language.SWEDISH ? "Avsluta" : "Exit"));
 
             int userInput = scanner.nextInt();
 
             switch (userInput) {
                 case 1:
-                    // Implementera logik för alternativ 1
+                    login();
                     break;
                 case 2:
-                    // Implementera logik för alternativ 2
+                    register();
                     break;
                 case 3:
-                    // Implementera logik för alternativ 3
+                    System.out.println((language == Language.SWEDISH ? "Avslutar programmet..." : "Exiting the program..."));
+                    return;
+                default:
+                    System.out.println((language == Language.SWEDISH ? "Ogiltigt val. Försök igen." : "Invalid choice. Please try again."));
+                    break;
+            }
+        }
+    }
+
+    private void login() {
+        System.out.println((language == Language.SWEDISH ? "Logga in" : "Login"));
+        System.out.println((language == Language.SWEDISH ? "Ange ditt användarnamn:" : "Enter your username:"));
+        String enteredUsername = scanner.next();
+        System.out.println((language == Language.SWEDISH ? "Ange ditt lösenord:" : "Enter your password:"));
+        String enteredPassword = scanner.next();
+
+        loggedInUser = userRepository.findByUsernameAndPassword(enteredUsername, enteredPassword);
+
+        if (loggedInUser == null) {
+            System.out.println((language == Language.SWEDISH ? "Inloggningen misslyckades. Försök igen." : "Login failed. Please try again."));
+        } else {
+            System.out.println((language == Language.SWEDISH ? "Inloggning lyckades. Välkommen, " : "Login successful. Welcome, ") + loggedInUser.getPlayerName() + "!");
+            displayMenu();
+        }
+    }
+
+    private void register() {
+        System.out.println((language == Language.SWEDISH ? "Registrera nytt konto" : "Register new account"));
+        System.out.println((language == Language.SWEDISH ? "Ange önskat användarnamn:" : "Enter desired username:"));
+        String username = scanner.next();
+        System.out.println((language == Language.SWEDISH ? "Ange önskat lösenord:" : "Enter desired password:"));
+        String password = scanner.next();
+        System.out.println((language == Language.SWEDISH ? "Ange spelarnamn:" : "Enter player name:"));
+        String playerName = scanner.next();
+
+        register(username, password, playerName);
+    }
+
+    private void register(String username, String password, String playerName) {
+        User existingUser = userRepository.findByUsername(username);
+        if (existingUser != null) {
+            System.out.println((language == Language.SWEDISH ? "Användarnamnet är redan taget. Välj ett annat" : "The username is already taken. Choose another one."));
+            return;
+        }
+
+        User newUser = new User(username, password, playerName);
+        userRepository.save(newUser);
+        System.out.println((language == Language.SWEDISH ? "Användaren registrerades" : "User registered successfully."));
+        getMenuOptions();
+    }
+
+    private void chooseLanguage() {
+        language = null;
+        System.out.println((language == Language.SWEDISH ? "Välj språk (svenska/engelska):" : "Choose language (svenska/engelska):"));
+        System.out.println("1. Svenska");
+        System.out.println("2. English");
+
+        String languageChoice = scanner.next().toLowerCase();
+
+        switch (languageChoice) {
+            case "svenska", "1":
+                language = Language.SWEDISH;
+                System.out.println((language == Language.SWEDISH ? "Svenska valt." : "Swedish chosen."));
+                break;
+            case "english", "2":
+                language = Language.ENGLISH;
+                System.out.println((language == Language.SWEDISH ? "Engelska valt." : "English chosen."));
+                break;
+            default:
+                System.out.println((language == Language.SWEDISH ? "Ogiltigt val. Standard till svenska!" : "Invalid choice. Defaulting to Swedish!"));
+                language = Language.SWEDISH;
+        }
+    }
+
+
+    @Override
+    public void displayMenu() {
+        if (scanner == null) {
+            scanner = new Scanner(System.in);
+        }
+
+        while (true) {
+            System.out.println((language == Language.SWEDISH ? "Alternativ:" : "Options:"));
+            List<String> menuOptions = getMenuOptions();
+
+            for (String menuOption : menuOptions) {
+                System.out.println(menuOption);
+            }
+
+            int userInput = scanner.nextInt();
+
+            List<String> userInputs = new ArrayList<>();
+            userInputs.add(String.valueOf(userInput));
+
+            switch (userInput) {
+                case 1:
+                    break;
+                case 2:
+                    break;
+                case 3:
                     break;
                 case 4:
-                    // Implementera logik för alternativ 4
                     break;
                 case 5:
                     logoutUser();
                     return;
+                case 6:
                 default:
                     System.out.println(getInvalidChoiceMessage());
                     break;
@@ -76,67 +158,16 @@ public class Menu implements MenuService {
         }
     }
 
-    private void chooseLanguage() {
-        System.out.println("Välj språk (svenska/engelska):");
-        System.out.println("1. Svenska");
-        System.out.println("2. English");
-
-        String languageChoice = scanner.next().toLowerCase(); // Läs in sträng och konvertera till små bokstäver
-
-        switch (languageChoice) {
-            case "svenska", "1":
-                language = Language.SWEDISH;
-                System.out.println("Svenska valt.");
-                break;
-            case "english", "2":
-                language = Language.ENGLISH;
-                System.out.println("English chosen.");
-                break;
-            default:
-                System.out.println("Invalid choice. Defaulting to Swedish!");
-                language = Language.SWEDISH;
-        }
-    }
-
-    @Override
-    public void displayMenu() {
-        System.out.println("Options:");
-        List<String> menuOptions = getMenuOptions();
-        for (String menuOption : menuOptions) {
-            System.out.println(menuOption);
-        }
-    }
-
     @Override
     public List<String> getMenuOptions() {
-        if (this.language != null) {
-            return switch (language) {
-                case SWEDISH -> List.of(
-                        "1. Spela",
-                        "2. Ranking",
-                        "3. Hantera konto",
-                        "4. Inställningar",
-                        "5. Logga ut"
-                );
-                default -> List.of(
-                        "1. Play",
-                        "2. Ranking",
-                        "3. Manage account",
-                        "4. Settings",
-                        "5. Logout"
-                );
-            };
-        } else {
-            System.out.println("Language is null. Defaulting to English!");
-            language = Language.ENGLISH;
-            return List.of(
-                    "1. Play",
-                    "2. Ranking",
-                    "3. Manage account",
-                    "4. Settings",
-                    "5. Logout"
-            );
-        }
+        List<String> options = new ArrayList<>();
+        options.add("1. " + (language == Language.SWEDISH ? "Spela" : "Play"));
+        options.add("2. " + (language == Language.SWEDISH ? "Ranking" : "Ranking"));
+        options.add("3. " + (language == Language.SWEDISH ? "Hantera konto" : "Manage account"));
+        options.add("4. " + (language == Language.SWEDISH ? "Inställningar" : "Settings"));
+        options.add("5. " + (language == Language.SWEDISH ? "Logga ut" : "Logout"));
+
+        return options;
     }
 
     private String getWelcomeMessage() {
@@ -154,7 +185,7 @@ public class Menu implements MenuService {
     }
 
     private void logoutUser() {
-        System.out.println("Logout successful. Goodbye, " + (loggedInUser != null ? loggedInUser.getPlayerName() : "") + "!");
+        System.out.println((language == Language.SWEDISH ? "Utloggning lyckades. Adjö, " : "Logout successful. Goodbye, ") + (loggedInUser != null ? loggedInUser.getPlayerName() : "") + "!");
         loggedInUser = null;
     }
 
