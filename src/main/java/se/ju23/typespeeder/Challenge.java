@@ -19,6 +19,10 @@ public class Challenge {
     public Challenge(EntityManager entityManager) {
     }
 
+    public Challenge() {
+
+    }
+
     public void startChallenge(Menu.Language language, User loggedInUser) {
         Scanner scanner = new Scanner(System.in);
 
@@ -53,16 +57,9 @@ public class Challenge {
         String userTypedText = getUserInput();
         long endTime = System.nanoTime();
 
-        int failedAttempts = 0;
-
         while (!userTypedText.equals(text)) {
             System.out.println((language == Menu.Language.SWEDISH ? "Felaktigt. Skriv om hela utmaningen:" : "Incorrect. Retype the entire challenge:"));
-
-            startTime = System.nanoTime();
             userTypedText = getUserInput();
-            endTime = System.nanoTime();
-
-            failedAttempts++;
         }
 
         boolean typedCorrectly = userTypedText.equals(text);
@@ -102,12 +99,7 @@ public class Challenge {
         StringBuilder text = new StringBuilder();
         int textLength = random.nextInt(50) + 50;
         for (int i = 0; i < textLength; i++) {
-            char currentChar;
-            if (random.nextBoolean()) {
-                currentChar = SPECIAL_CHARACTERS.charAt(random.nextInt(SPECIAL_CHARACTERS.length()));
-            } else {
-                currentChar = (char) (random.nextInt(26) + 'a');
-            }
+            char currentChar = random.nextBoolean() ? SPECIAL_CHARACTERS.charAt(random.nextInt(SPECIAL_CHARACTERS.length())) : (char) (random.nextInt(26) + 'a');
             text.append(currentChar);
         }
         return text.toString();
@@ -117,7 +109,6 @@ public class Challenge {
         Scanner scanner = new Scanner(System.in);
         return scanner.nextLine();
     }
-
 
     public void lettersToType() {
     }

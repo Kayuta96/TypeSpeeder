@@ -1,6 +1,7 @@
 package se.ju23.typespeeder;
 
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,7 +11,7 @@ public class ChallengePerformanceTest {
     private static final int MILLISECONDS_CONVERSION = 1_000_000;
     @Test
     public void testStartChallengePerformance() {
-        Challenge challenge = new Challenge(entityManager);
+        Challenge challenge = new Challenge();
         long startTime = System.nanoTime();
         challenge.startChallenge();
         long endTime = System.nanoTime();
@@ -19,7 +20,7 @@ public class ChallengePerformanceTest {
     }
     @Test
     public void testLettersToTypePerformance() {
-        Challenge challenge = new Challenge(entityManager);
+        Challenge challenge = new Challenge();
         long startTime = System.nanoTime();
         challenge.lettersToType();
         long endTime = System.nanoTime();

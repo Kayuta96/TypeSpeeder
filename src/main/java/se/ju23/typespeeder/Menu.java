@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -37,7 +38,15 @@ public class Menu implements MenuService {
             System.out.println("2. " + (language == Language.SWEDISH ? "Registrera nytt konto" : "Register new account"));
             System.out.println("3. " + (language == Language.SWEDISH ? "Avsluta" : "Exit"));
 
-            int userInput = scanner.nextInt();
+            int userInput;
+            try {
+                userInput = scanner.nextInt();
+                scanner.nextLine();
+            } catch (InputMismatchException e) {
+                System.out.println((language == Language.SWEDISH ? "Ogiltigt val. Försök igen." : "Invalid choice. Please try again."));
+                scanner.nextLine();
+                continue;
+            }
 
             switch (userInput) {
                 case 1:
@@ -63,13 +72,17 @@ public class Menu implements MenuService {
         System.out.println((language == Language.SWEDISH ? "Ange ditt lösenord:" : "Enter your password:"));
         String enteredPassword = scanner.next();
 
-        loggedInUser = userRepository.findByUsernameAndPassword(enteredUsername, enteredPassword);
+        try {
+            loggedInUser = userRepository.findByUsernameAndPassword(enteredUsername, enteredPassword);
 
-        if (loggedInUser == null) {
-            System.out.println((language == Language.SWEDISH ? "Inloggningen misslyckades. Försök igen." : "Login failed. Please try again."));
-        } else {
+            if (loggedInUser == null) {
+                throw new Exception();
+            }
+
             System.out.println((language == Language.SWEDISH ? "Inloggning lyckades. Välkommen, " : "Login successful. Welcome, ") + loggedInUser.getPlayerName() + "!");
             displayMenu();
+        } catch (Exception e) {
+            System.out.println((language == Language.SWEDISH ? "Inloggningen misslyckades. Försök igen." : "Login failed. Please try again."));
         }
     }
 
@@ -82,7 +95,11 @@ public class Menu implements MenuService {
         System.out.println((language == Language.SWEDISH ? "Ange spelarnamn:" : "Enter player name:"));
         String playerName = scanner.next();
 
-        register(username, password, playerName);
+        try {
+            register(username, password, playerName);
+        } catch (Exception e) {
+            System.out.println((language == Language.SWEDISH ? "Registreringen misslyckades. Försök igen." : "Registration failed. Please try again."));
+        }
     }
 
     private void register(String username, String password, String playerName) {
@@ -121,7 +138,6 @@ public class Menu implements MenuService {
         }
     }
 
-
     @Override
     public void displayMenu() {
         if (scanner == null) {
@@ -136,7 +152,15 @@ public class Menu implements MenuService {
                 System.out.println(menuOption);
             }
 
-            int userInput = scanner.nextInt();
+            int userInput;
+            try {
+                userInput = scanner.nextInt();
+                scanner.nextLine(); // Consumes the newline character after nextInt()
+            } catch (InputMismatchException e) {
+                System.out.println(getInvalidChoiceMessage());
+                scanner.nextLine(); // Clear input buffer
+                continue;
+            }
 
             switch (userInput) {
                 case 1:
@@ -160,8 +184,6 @@ public class Menu implements MenuService {
         }
     }
 
-
-
     @Override
     public List<String> getMenuOptions() {
         List<String> options = new ArrayList<>();
@@ -172,13 +194,6 @@ public class Menu implements MenuService {
         options.add("5. " + (language == Language.SWEDISH ? "Logga ut" : "Logout"));
 
         return options;
-    }
-
-    private String getWelcomeMessage() {
-        return switch (language) {
-            case SWEDISH -> "Välkommen till huvudmenyn, " + (loggedInUser != null ? loggedInUser.getPlayerName() : "") + "!";
-            default -> "Welcome to the main menu, " + (loggedInUser != null ? loggedInUser.getPlayerName() : "") + "!";
-        };
     }
 
     private String getInvalidChoiceMessage() {
