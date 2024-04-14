@@ -1,10 +1,6 @@
 package se.ju23.typespeeder;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class User {
@@ -18,6 +14,9 @@ public class User {
     @Column(name = "player_name")
     private String playerName;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private UserStatistics userStatistics;
+
     public User() {
     }
 
@@ -27,7 +26,7 @@ public class User {
         this.playerName = playerName;
     }
 
-    // Getters and setters
+    // Getters o setters
     public Long getId() {
         return id;
     }
@@ -58,6 +57,14 @@ public class User {
 
     public void setPlayerName(String playerName) {
         this.playerName = playerName;
+    }
+
+    public UserStatistics getUserStatistics() {
+        return userStatistics;
+    }
+
+    public void setUserStatistics(UserStatistics userStatistics) {
+        this.userStatistics = userStatistics;
     }
 
     // toString method

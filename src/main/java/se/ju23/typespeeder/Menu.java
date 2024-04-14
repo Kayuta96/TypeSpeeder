@@ -1,5 +1,6 @@
 package se.ju23.typespeeder;
 
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,13 +11,15 @@ import java.util.Scanner;
 @Service
 public class Menu implements MenuService {
     private UserRepository userRepository;
+    private EntityManager entityManager;
     private User loggedInUser;
     private Language language;
     private Scanner scanner;
 
     @Autowired
-    public Menu(UserRepository userRepository) {
+    public Menu(UserRepository userRepository, EntityManager entityManager) {
         this.userRepository = userRepository;
+        this.entityManager = entityManager;
         this.scanner = new Scanner(System.in);
     }
 
@@ -135,13 +138,12 @@ public class Menu implements MenuService {
 
             int userInput = scanner.nextInt();
 
-            List<String> userInputs = new ArrayList<>();
-            userInputs.add(String.valueOf(userInput));
-
             switch (userInput) {
                 case 1:
+                    startChallenge();
                     break;
                 case 2:
+
                     break;
                 case 3:
                     break;
@@ -158,11 +160,13 @@ public class Menu implements MenuService {
         }
     }
 
+
+
     @Override
     public List<String> getMenuOptions() {
         List<String> options = new ArrayList<>();
         options.add("1. " + (language == Language.SWEDISH ? "Spela" : "Play"));
-        options.add("2. " + (language == Language.SWEDISH ? "Ranking" : "Ranking"));
+        options.add("2. " + (language == Language.SWEDISH ? "Rankning" : "Ranking"));
         options.add("3. " + (language == Language.SWEDISH ? "Hantera konto" : "Manage account"));
         options.add("4. " + (language == Language.SWEDISH ? "Inställningar" : "Settings"));
         options.add("5. " + (language == Language.SWEDISH ? "Logga ut" : "Logout"));
@@ -185,11 +189,16 @@ public class Menu implements MenuService {
     }
 
     private void logoutUser() {
-        System.out.println((language == Language.SWEDISH ? "Utloggning lyckades. Adjö, " : "Logout successful. Goodbye, ") + (loggedInUser != null ? loggedInUser.getPlayerName() : "") + "!");
+        System.out.println((language == Language.SWEDISH ? "Utloggning lyckades. Hej då, " : "Logout successful. Goodbye, ") + (loggedInUser != null ? loggedInUser.getPlayerName() : "") + "!");
         loggedInUser = null;
     }
 
-    private enum Language {
+    public void startChallenge() {
+        Challenge challenge = new Challenge(entityManager);
+        challenge.startChallenge(language, loggedInUser);
+    }
+
+    public enum Language {
         ENGLISH,
         SWEDISH
     }

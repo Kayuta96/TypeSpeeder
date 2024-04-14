@@ -1,49 +1,53 @@
 package se.ju23.typespeeder;
 
-import java.util.List;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Random;
 import java.util.Scanner;
 
+@Service
 public class Challenge {
     private static final Random random = new Random();
     private static final String LETTERS = "abcdefghijklmnopqrstuvwxyz";
     private static final String SPECIAL_CHARACTERS = "@&?#";
 
-    private static final String ANSI_RESET = "\u001B[0m";
-    private static final String ANSI_RED = "\u001B[31m";
-    private static final String ANSI_GREEN = "\u001B[32m";
+    @PersistenceContext
+    private EntityManager entityManager;
 
-    public void startChallenge() {
+    public Challenge(EntityManager entityManager) {
+    }
+
+    public void startChallenge(Menu.Language language, User loggedInUser) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Select a challenge type:");
-        System.out.println("1. Letters Challenge");
-        System.out.println("2. Words Challenge");
-        System.out.println("3. Special Characters Challenge");
+        System.out.println((language == Menu.Language.SWEDISH ? "Välj en utmaningstyp:" : "Select a challenge type:"));
+        System.out.println("1. " + (language == Menu.Language.SWEDISH ? "Bokstavsuutmaning" : "Letters Challenge"));
+        System.out.println("2. " + (language == Menu.Language.SWEDISH ? "Orduutmaning" : "Words Challenge"));
+        System.out.println("3. " + (language == Menu.Language.SWEDISH ? "Särskilda tecken utmaning" : "Special Characters Challenge"));
 
         int challengeType = scanner.nextInt();
         scanner.nextLine();
 
         switch (challengeType) {
             case 1:
-                lettersToType(generateRandomLetters(50));
+                lettersToType(generateRandomLetters(50), language, loggedInUser);
                 break;
             case 2:
-                lettersToType(generateRandomWords(5));
+                lettersToType(generateRandomWords(5), language, loggedInUser);
                 break;
             case 3:
-                lettersToType(generateTextWithSpecialCharacters());
+                lettersToType(generateTextWithSpecialCharacters(), language, loggedInUser);
                 break;
             default:
-                System.out.println("Invalid challenge type. Exiting...");
+                System.out.println((language == Menu.Language.SWEDISH ? "Ogiltig utmaningstyp. Avslutar..." : "Invalid challenge type. Exiting..."));
         }
     }
 
-    private void lettersToType(String text) {
-        String highlightedText = highlightText(text);
-
-        System.out.println("Type the following as fast as you can:");
-        System.out.println(highlightedText);
+    private void lettersToType(String text, Menu.Language language, User loggedInUser) {
+        System.out.println((language == Menu.Language.SWEDISH ? "Skriv följande så snabbt du kan:" : "Type the following as fast as you can:"));
+        System.out.println(text);
 
         long startTime = System.nanoTime();
         String userTypedText = getUserInput();
@@ -52,7 +56,7 @@ public class Challenge {
         int failedAttempts = 0;
 
         while (!userTypedText.equals(text)) {
-            System.out.println("Incorrect. Retype the entire challenge:");
+            System.out.println((language == Menu.Language.SWEDISH ? "Felaktigt. Skriv om hela utmaningen:" : "Incorrect. Retype the entire challenge:"));
 
             startTime = System.nanoTime();
             userTypedText = getUserInput();
@@ -62,8 +66,20 @@ public class Challenge {
         }
 
         boolean typedCorrectly = userTypedText.equals(text);
-        System.out.println(typedCorrectly ? "Congratulations! You typed it correctly." : "Challenge completed with errors.");
-        printResult(text.length(), startTime, endTime, failedAttempts);
+        System.out.println(typedCorrectly ? (language == Menu.Language.SWEDISH ? "Grattis! Du skrev det korrekt." : "Congratulations! You typed it correctly.") : (language == Menu.Language.SWEDISH ? "Utmaningen klarades med fel." : "Challenge completed with errors."));
+        long totalTime = endTime - startTime;
+        double totalTimeInSeconds = totalTime / 1_000_000_000.0; // Konvertera nanosekunder till sekunder
+        int wordsPerMinute = calculateWordsPerMinute(text.length(), totalTimeInSeconds);
+        System.out.println((language == Menu.Language.SWEDISH ? "Tid tagen: " : "Time taken: ") + totalTimeInSeconds + " seconds.");
+        System.out.println((language == Menu.Language.SWEDISH ? "Ord per minut: " : "Words per minute: ") + wordsPerMinute);
+
+    }
+
+    private int calculateWordsPerMinute(int textLength, double totalTimeInSeconds) {
+        // Anta att varje ord är 5 tecken långt för enkelhetens skull
+        int words = textLength / 5;
+        // Beräkna antalet ord per minut
+        return (int) (words / totalTimeInSeconds * 60);
     }
 
     private String generateRandomLetters(int count) {
@@ -97,26 +113,15 @@ public class Challenge {
         return text.toString();
     }
 
-    private String highlightText(String text) {
-        StringBuilder highlightedText = new StringBuilder();
-        for (char c : text.toCharArray()) {
-            highlightedText.append(random.nextBoolean() ? ANSI_RED : ANSI_GREEN).append(c).append(ANSI_RESET);
-        }
-        return highlightedText.toString();
-    }
-
     private String getUserInput() {
         Scanner scanner = new Scanner(System.in);
         return scanner.nextLine();
     }
 
-    private void printResult(int inputLength, long startTime, long endTime, int failedAttempts) {
-        long totalTime = endTime - startTime;
-        int inputPerMinute = (int) ((inputLength / (double) totalTime) * 60000000000L);
-        System.out.println("Your typing speed: " + inputPerMinute + " per minute.");
-        System.out.println("Number of failed attempts: " + failedAttempts);
-    }
 
     public void lettersToType() {
+    }
+
+    public void startChallenge() {
     }
 }
