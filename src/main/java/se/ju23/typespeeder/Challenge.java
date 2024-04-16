@@ -17,11 +17,10 @@ public class Challenge {
     private EntityManager entityManager;
 
     public Challenge(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
-    public Challenge() {
-
-    }
+    public Challenge() {}
 
     public void startChallenge(Menu.Language language, User loggedInUser) {
         Scanner scanner = new Scanner(System.in);
@@ -70,6 +69,24 @@ public class Challenge {
         System.out.println((language == Menu.Language.SWEDISH ? "Tid tagen: " : "Time taken: ") + totalTimeInSeconds + " seconds.");
         System.out.println((language == Menu.Language.SWEDISH ? "Ord per minut: " : "Words per minute: ") + wordsPerMinute);
 
+        // Uppdatera användarens statistik med hastighet efter utmaningen
+        loggedInUser.getUserStatistics().updateSpeed(wordsPerMinute, totalTimeInSeconds);
+    }
+
+    // Metod för att uppdatera användarstatistiken
+    @Transactional
+    public void updateStatistics(User user, int wordsPerMinute, int correctCount, int consecutiveCorrectCount) {
+        UserStatistics userStatistics = user.getUserStatistics();
+        if (userStatistics == null) {
+            userStatistics = new UserStatistics();
+            userStatistics.setUser(user);
+            user.setUserStatistics(userStatistics);
+        }
+        double totalTimeInSeconds = 0;
+        userStatistics.updateSpeed(wordsPerMinute, totalTimeInSeconds); // totalTimeInSeconds behöver tillhandahållas
+        userStatistics.setCorrectCount(userStatistics.getCorrectCount() + correctCount);
+        userStatistics.setConsecutiveCorrectCount(userStatistics.getConsecutiveCorrectCount() + consecutiveCorrectCount);
+        entityManager.merge(userStatistics);
     }
 
     private int calculateWordsPerMinute(int textLength, double totalTimeInSeconds) {

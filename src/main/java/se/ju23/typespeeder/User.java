@@ -24,6 +24,8 @@ public class User {
         this.username = username;
         this.password = password;
         this.playerName = playerName;
+        this.userStatistics = new UserStatistics();
+        this.userStatistics.setUser(this);
     }
 
     // Getters o setters
@@ -65,6 +67,7 @@ public class User {
 
     public void setUserStatistics(UserStatistics userStatistics) {
         this.userStatistics = userStatistics;
+        userStatistics.setUser(this);
     }
 
     // toString method
