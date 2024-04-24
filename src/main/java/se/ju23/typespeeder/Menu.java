@@ -1,16 +1,17 @@
 package se.ju23.typespeeder;
 
-import jakarta.persistence.EntityManager;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
+import jakarta.persistence.EntityManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 @Service
 public class Menu implements MenuService {
+    private RankingManager rankingManager;
     private UserRepository userRepository;
     private EntityManager entityManager;
     private User loggedInUser;
@@ -18,10 +19,11 @@ public class Menu implements MenuService {
     private Scanner scanner;
 
     @Autowired
-    public Menu(UserRepository userRepository, EntityManager entityManager) {
+    public Menu(UserRepository userRepository, EntityManager entityManager, RankingManager rankingManager, Scanner scanner) {
         this.userRepository = userRepository;
         this.entityManager = entityManager;
-        this.scanner = new Scanner(System.in);
+        this.rankingManager = rankingManager;
+        this.scanner = scanner;
     }
 
     public Menu() {
@@ -115,6 +117,11 @@ public class Menu implements MenuService {
         getMenuOptions();
     }
 
+    private void displayRankings() {
+        List<User> users = userRepository.findAll();
+        RankingManager.showRankings(users);
+    }
+
     private void chooseLanguage() {
         language = null;
         System.out.println((language == Language.SWEDISH ? "Välj språk (svenska/engelska):" : "Choose language (svenska/engelska):"));
@@ -138,7 +145,6 @@ public class Menu implements MenuService {
         }
     }
 
-    @Override
     public void displayMenu() {
         if (scanner == null) {
             scanner = new Scanner(System.in);
@@ -155,10 +161,10 @@ public class Menu implements MenuService {
             int userInput;
             try {
                 userInput = scanner.nextInt();
-                scanner.nextLine(); // Consumes the newline character after nextInt()
+                scanner.nextLine();
             } catch (InputMismatchException e) {
                 System.out.println(getInvalidChoiceMessage());
-                scanner.nextLine(); // Clear input buffer
+                scanner.nextLine();
                 continue;
             }
 
@@ -167,7 +173,7 @@ public class Menu implements MenuService {
                     startChallenge();
                     break;
                 case 2:
-
+                    displayRankings();
                     break;
                 case 3:
                     break;
@@ -184,7 +190,6 @@ public class Menu implements MenuService {
         }
     }
 
-    @Override
     public List<String> getMenuOptions() {
         List<String> options = new ArrayList<>();
         options.add("1. " + (language == Language.SWEDISH ? "Spela" : "Play"));
@@ -209,8 +214,8 @@ public class Menu implements MenuService {
     }
 
     public void startChallenge() {
-        Challenge challenge = new Challenge(entityManager);
-        challenge.startChallenge(language, loggedInUser);
+        Challenge challenge = new Challenge(entityManager, rankingManager, this, scanner);
+        loggedInUser = challenge.startChallenge(language, loggedInUser);
     }
 
     public enum Language {

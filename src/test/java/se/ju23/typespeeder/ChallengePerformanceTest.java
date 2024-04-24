@@ -1,7 +1,6 @@
 package se.ju23.typespeeder;
 
 
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;

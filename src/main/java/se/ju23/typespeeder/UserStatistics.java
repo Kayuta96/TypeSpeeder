@@ -63,9 +63,18 @@ public class UserStatistics {
     public void setConsecutiveCorrectCount(Integer consecutiveCorrectCount) {
         this.consecutiveCorrectCount = consecutiveCorrectCount;
     }
+
     public void updateSpeed(int wordsPerMinute, double totalTimeInSeconds) {
         double newSpeed = calculateSpeed(wordsPerMinute, totalTimeInSeconds);
         setSpeed(newSpeed);
+    }
+
+    public void updateCorrectCount(int correctCount) {
+        this.correctCount += correctCount;
+    }
+
+    public void updateConsecutiveCorrectCount(int consecutiveCorrectCount) {
+        this.consecutiveCorrectCount += consecutiveCorrectCount;
     }
 
     private double calculateSpeed(int wordsPerMinute, double totalTimeInSeconds) {
