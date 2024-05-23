@@ -18,6 +18,8 @@ public class User {
     private UserStatistics userStatistics;
 
     public User() {
+        this.userStatistics = new UserStatistics();
+        this.userStatistics.setUser(this);
     }
 
     public User(String username, String password, String playerName) {
@@ -28,7 +30,7 @@ public class User {
         this.userStatistics.setUser(this);
     }
 
-    // Getters o setters
+    // Getters and setters
     public Long getId() {
         return id;
     }
@@ -70,7 +72,6 @@ public class User {
         userStatistics.setUser(this);
     }
 
-    // toString method
     @Override
     public String toString() {
         return "User{" +

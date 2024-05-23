@@ -3,33 +3,52 @@ package se.ju23.typespeeder;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "user_statistics")
 public class UserStatistics {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private double averageSpeed;
+    private int totalCorrect;
+    private int totalInOrderCorrect;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "speed")
-    private Double speed;
+    public UserStatistics() {
+    }
 
-    @Column(name = "correct_count")
-    private Integer correctCount;
-
-    @Column(name = "consecutive_correct_count")
-    private Integer consecutiveCorrectCount;
-
-    // Getters and setters
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public double getAverageSpeed() {
+        return averageSpeed;
+    }
+
+    public void setAverageSpeed(double averageSpeed) {
+        this.averageSpeed = averageSpeed;
+    }
+
+    public int getTotalCorrect() {
+        return totalCorrect;
+    }
+
+    public void setTotalCorrect(int totalCorrect) {
+        this.totalCorrect = totalCorrect;
+    }
+
+    public int getTotalInOrderCorrect() {
+        return totalInOrderCorrect;
+    }
+
+    public void setTotalInOrderCorrect(int totalInOrderCorrect) {
+        this.totalInOrderCorrect = totalInOrderCorrect;
     }
 
     public User getUser() {
@@ -40,45 +59,9 @@ public class UserStatistics {
         this.user = user;
     }
 
-    public Double getSpeed() {
-        return speed;
+    public void updateStats(double speed, int correct, int inOrderCorrect) {
+        this.averageSpeed = (this.averageSpeed * (this.totalCorrect + correct) + speed) / (this.totalCorrect + correct);
+        this.totalCorrect += correct;
+        this.totalInOrderCorrect += inOrderCorrect;
     }
-
-    public void setSpeed(Double speed) {
-        this.speed = speed;
-    }
-
-    public Integer getCorrectCount() {
-        return correctCount;
-    }
-
-    public void setCorrectCount(Integer correctCount) {
-        this.correctCount = correctCount;
-    }
-
-    public Integer getConsecutiveCorrectCount() {
-        return consecutiveCorrectCount;
-    }
-
-    public void setConsecutiveCorrectCount(Integer consecutiveCorrectCount) {
-        this.consecutiveCorrectCount = consecutiveCorrectCount;
-    }
-
-    public void updateSpeed(int wordsPerMinute, double totalTimeInSeconds) {
-        double newSpeed = calculateSpeed(wordsPerMinute, totalTimeInSeconds);
-        setSpeed(newSpeed);
-    }
-
-    public void updateCorrectCount(int correctCount) {
-        this.correctCount += correctCount;
-    }
-
-    public void updateConsecutiveCorrectCount(int consecutiveCorrectCount) {
-        this.consecutiveCorrectCount += consecutiveCorrectCount;
-    }
-
-    private double calculateSpeed(int wordsPerMinute, double totalTimeInSeconds) {
-        return wordsPerMinute / totalTimeInSeconds * 60;
-    }
-
 }

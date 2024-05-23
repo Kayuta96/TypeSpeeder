@@ -11,65 +11,45 @@ import java.util.Scanner;
 
 @Service
 public class Menu implements MenuService {
-    private UserRepository userRepository;
-    private EntityManager entityManager;
+    private final UserRepository userRepository;
+    private final EntityManager entityManager;
+    private final RankingService rankingService;
     private User loggedInUser;
     private Language language;
-    private Scanner scanner;
+    private final Scanner scanner;
 
     @Autowired
-    public Menu(UserRepository userRepository, EntityManager entityManager) {
+    public Menu(UserRepository userRepository, EntityManager entityManager, RankingService rankingService) {
         this.userRepository = userRepository;
         this.entityManager = entityManager;
-        this.scanner = new Scanner(System.in);
-    }
-
-    public Menu() {
+        this.rankingService = rankingService;
         this.scanner = new Scanner(System.in);
     }
 
     public void start() {
         chooseLanguage();
         while (true) {
-            System.out.println("------------");
-            System.out.println((language == Language.SWEDISH ? "Välkommen till menyn!" : "Welcome to the menu!"));
-            System.out.println((language == Language.SWEDISH ? "Vad vill du göra?" : "What would you like to do?"));
-            System.out.println("1. " + (language == Language.SWEDISH ? "Logga in" : "Login"));
-            System.out.println("2. " + (language == Language.SWEDISH ? "Registrera nytt konto" : "Register new account"));
-            System.out.println("3. " + (language == Language.SWEDISH ? "Avsluta" : "Exit"));
-
-            int userInput;
-            try {
-                userInput = scanner.nextInt();
-                scanner.nextLine();
-            } catch (InputMismatchException e) {
-                System.out.println((language == Language.SWEDISH ? "Ogiltigt val. Försök igen." : "Invalid choice. Please try again."));
-                scanner.nextLine();
-                continue;
-            }
+            displayMainMenu();
+            int userInput = getUserInput();
+            if (userInput == -1) continue;
 
             switch (userInput) {
-                case 1:
-                    login();
-                    break;
-                case 2:
-                    register();
-                    break;
-                case 3:
-                    System.out.println((language == Language.SWEDISH ? "Avslutar programmet..." : "Exiting the program..."));
+                case 1 -> login();
+                case 2 -> register();
+                case 3 -> {
+                    System.out.println(getLocalizedText("Exiting the program...", "Avslutar programmet..."));
                     return;
-                default:
-                    System.out.println((language == Language.SWEDISH ? "Ogiltigt val. Försök igen." : "Invalid choice. Please try again."));
-                    break;
+                }
+                default -> System.out.println(getLocalizedText("Invalid choice. Please try again.", "Ogiltigt val. Försök igen."));
             }
         }
     }
 
     private void login() {
-        System.out.println((language == Language.SWEDISH ? "Logga in" : "Login"));
-        System.out.println((language == Language.SWEDISH ? "Ange ditt användarnamn:" : "Enter your username:"));
+        System.out.println(getLocalizedText("Login", "Logga in"));
+        System.out.print(getLocalizedText("Enter your username: ", "Ange ditt användarnamn:"));
         String enteredUsername = scanner.next();
-        System.out.println((language == Language.SWEDISH ? "Ange ditt lösenord:" : "Enter your password:"));
+        System.out.print(getLocalizedText("Enter your password: ", "Ange ditt lösenord:"));
         String enteredPassword = scanner.next();
 
         try {
@@ -79,107 +59,118 @@ public class Menu implements MenuService {
                 throw new Exception();
             }
 
-            System.out.println((language == Language.SWEDISH ? "Inloggning lyckades. Välkommen, " : "Login successful. Welcome, ") + loggedInUser.getPlayerName() + "!");
+            System.out.println(getLocalizedText("Login successful. Welcome, ", "Inloggning lyckades. Välkommen, ") + loggedInUser.getPlayerName() + "!");
             displayMenu();
         } catch (Exception e) {
-            System.out.println((language == Language.SWEDISH ? "Inloggningen misslyckades. Försök igen." : "Login failed. Please try again."));
+            System.out.println(getLocalizedText("Login failed. Please try again.", "Inloggningen misslyckades. Försök igen."));
         }
     }
 
     private void register() {
-        System.out.println((language == Language.SWEDISH ? "Registrera nytt konto" : "Register new account"));
-        System.out.println((language == Language.SWEDISH ? "Ange önskat användarnamn:" : "Enter desired username:"));
+        System.out.println(getLocalizedText("Register new account", "Registrera nytt konto"));
+        System.out.print(getLocalizedText("Enter desired username: ", "Ange önskat användarnamn:"));
         String username = scanner.next();
-        System.out.println((language == Language.SWEDISH ? "Ange önskat lösenord:" : "Enter desired password:"));
+        System.out.print(getLocalizedText("Enter desired password: ", "Ange önskat lösenord:"));
         String password = scanner.next();
-        System.out.println((language == Language.SWEDISH ? "Ange spelarnamn:" : "Enter player name:"));
+        System.out.print(getLocalizedText("Enter player name: ", "Ange spelarnamn:"));
         String playerName = scanner.next();
 
         try {
-            register(username, password, playerName);
+            registerNewUser(username, password, playerName);
         } catch (Exception e) {
-            System.out.println((language == Language.SWEDISH ? "Registreringen misslyckades. Försök igen." : "Registration failed. Please try again."));
+            System.out.println(getLocalizedText("Registration failed. Please try again.", "Registreringen misslyckades. Försök igen."));
         }
     }
 
-    private void register(String username, String password, String playerName) {
+    private void registerNewUser(String username, String password, String playerName) {
         User existingUser = userRepository.findByUsername(username);
         if (existingUser != null) {
-            System.out.println((language == Language.SWEDISH ? "Användarnamnet är redan taget. Välj ett annat" : "The username is already taken. Choose another one."));
+            System.out.println(getLocalizedText("The username is already taken. Choose another one.", "Användarnamnet är redan taget. Välj ett annat"));
             return;
         }
 
         User newUser = new User(username, password, playerName);
         userRepository.save(newUser);
-        System.out.println((language == Language.SWEDISH ? "Användaren registrerades" : "User registered successfully."));
-        getMenuOptions();
+        System.out.println(getLocalizedText("User registered successfully.", "Användaren registrerades"));
+        displayMenu();
     }
 
     private void chooseLanguage() {
         language = null;
-        System.out.println((language == Language.SWEDISH ? "Välj språk (svenska/engelska):" : "Choose language (svenska/engelska):"));
+        System.out.println("Choose language (svenska/engelska):");
         System.out.println("1. Svenska");
         System.out.println("2. English");
 
         String languageChoice = scanner.next().toLowerCase();
 
         switch (languageChoice) {
-            case "svenska", "1":
+            case "svenska", "1" -> {
                 language = Language.SWEDISH;
-                System.out.println((language == Language.SWEDISH ? "Svenska valt." : "Swedish chosen."));
-                break;
-            case "english", "2":
+                System.out.println("Svenska valt.");
+            }
+            case "english", "2" -> {
                 language = Language.ENGLISH;
-                System.out.println((language == Language.SWEDISH ? "Engelska valt." : "English chosen."));
-                break;
-            default:
-                System.out.println((language == Language.SWEDISH ? "Ogiltigt val. Standard till svenska!" : "Invalid choice. Defaulting to Swedish!"));
+                System.out.println("English chosen.");
+            }
+            default -> {
+                System.out.println("Ogiltigt val. Standard till svenska!");
                 language = Language.SWEDISH;
+            }
         }
+    }
+
+    private void displayMainMenu() {
+        System.out.println("------------");
+        System.out.println(getLocalizedText("Welcome to the menu!", "Välkommen till menyn!"));
+        System.out.println(getLocalizedText("What would you like to do?", "Vad vill du göra?"));
+        System.out.println("1. " + getLocalizedText("Login", "Logga in"));
+        System.out.println("2. " + getLocalizedText("Register new account", "Registrera nytt konto"));
+        System.out.println("3. " + getLocalizedText("Exit", "Avsluta"));
+    }
+
+    private int getUserInput() {
+        try {
+            int userInput = scanner.nextInt();
+            scanner.nextLine();
+            return userInput;
+        } catch (InputMismatchException e) {
+            System.out.println(getLocalizedText("Invalid choice. Please try again.", "Ogiltigt val. Försök igen."));
+            scanner.nextLine();
+            return -1;
+        }
+    }
+
+    private String getLocalizedText(String englishText, String swedishText) {
+        return language == Language.SWEDISH ? swedishText : englishText;
     }
 
     @Override
     public void displayMenu() {
-        if (scanner == null) {
-            scanner = new Scanner(System.in);
-        }
-
         while (true) {
-            System.out.println((language == Language.SWEDISH ? "Alternativ:" : "Options:"));
+            System.out.println(getLocalizedText("Options:", "Alternativ:"));
             List<String> menuOptions = getMenuOptions();
 
             for (String menuOption : menuOptions) {
                 System.out.println(menuOption);
             }
 
-            int userInput;
-            try {
-                userInput = scanner.nextInt();
-                scanner.nextLine(); // Consumes the newline character after nextInt()
-            } catch (InputMismatchException e) {
-                System.out.println(getInvalidChoiceMessage());
-                scanner.nextLine(); // Clear input buffer
-                continue;
-            }
+            int userInput = getUserInput();
+            if (userInput == -1) continue;
 
             switch (userInput) {
-                case 1:
-                    startChallenge();
-                    break;
-                case 2:
-
-                    break;
-                case 3:
-                    break;
-                case 4:
-                    break;
-                case 5:
+                case 1 -> startChallenge();
+                case 2 -> displayRanking();
+                case 3 -> {
+                    // TODO: Implement account management
+                }
+                case 4 -> {
+                    // TODO: Implement settings
+                }
+                case 5 -> {
                     logoutUser();
                     return;
-                case 6:
-                default:
-                    System.out.println(getInvalidChoiceMessage());
-                    break;
+                }
+                default -> System.out.println(getInvalidChoiceMessage());
             }
         }
     }
@@ -187,30 +178,36 @@ public class Menu implements MenuService {
     @Override
     public List<String> getMenuOptions() {
         List<String> options = new ArrayList<>();
-        options.add("1. " + (language == Language.SWEDISH ? "Spela" : "Play"));
-        options.add("2. " + (language == Language.SWEDISH ? "Rankning" : "Ranking"));
-        options.add("3. " + (language == Language.SWEDISH ? "Hantera konto" : "Manage account"));
-        options.add("4. " + (language == Language.SWEDISH ? "Inställningar" : "Settings"));
-        options.add("5. " + (language == Language.SWEDISH ? "Logga ut" : "Logout"));
-
+        options.add("1. " + getLocalizedText("Play", "Spela"));
+        options.add("2. " + getLocalizedText("Ranking", "Rankning"));
+        options.add("3. " + getLocalizedText("Manage account", "Hantera konto"));
+        options.add("4. " + getLocalizedText("Settings", "Inställningar"));
+        options.add("5. " + getLocalizedText("Logout", "Logga ut"));
         return options;
     }
 
     private String getInvalidChoiceMessage() {
-        return switch (language) {
-            case SWEDISH -> "Ogiltigt val. Välj mellan 1-5.";
-            default -> "Invalid choice. Choose between 1-5.";
-        };
+        return getLocalizedText("Invalid choice. Choose between 1-5.", "Ogiltigt val. Välj mellan 1-5.");
     }
 
     private void logoutUser() {
-        System.out.println((language == Language.SWEDISH ? "Utloggning lyckades. Hej då, " : "Logout successful. Goodbye, ") + (loggedInUser != null ? loggedInUser.getPlayerName() : "") + "!");
+        System.out.println(getLocalizedText("Logout successful. Goodbye, ", "Utloggning lyckades. Hej då, ") + (loggedInUser != null ? loggedInUser.getPlayerName() : "") + "!");
         loggedInUser = null;
     }
 
-    public void startChallenge() {
+    private void startChallenge() {
         Challenge challenge = new Challenge(entityManager);
         challenge.startChallenge(language, loggedInUser);
+    }
+
+    private void displayRanking() {
+        List<User> rankedUsers = rankingService.getRankedUsers();
+        System.out.println(getLocalizedText("Ranking List:", "Rankninglista:"));
+        int rank = 1;
+        for (User user : rankedUsers) {
+            System.out.println(rank + ". " + user.getPlayerName() + " - " + rankingService.calculateCompositeScore(user));
+            rank++;
+        }
     }
 
     public enum Language {

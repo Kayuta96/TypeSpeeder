@@ -20,14 +20,13 @@ public class Challenge {
     }
 
     public Challenge() {
-
     }
 
-    public User startChallenge(Menu.Language language, User loggedInUser) {
+    public void startChallenge(Menu.Language language, User loggedInUser) {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println((language == Menu.Language.SWEDISH ? "Välj en utmaningstyp:" : "Select a challenge type:"));
-        System.out.println("1. " + (language == Menu.Language.SWEDISH ? "Bokstavsuutmaning" : "Letters Challenge"));
+        System.out.println("1. " + (language == Menu.Language.SWEDISH ? "Bokstavsutmaning" : "Letters Challenge"));
         System.out.println("2. " + (language == Menu.Language.SWEDISH ? "Orduutmaning" : "Words Challenge"));
         System.out.println("3. " + (language == Menu.Language.SWEDISH ? "Särskilda tecken utmaning" : "Special Characters Challenge"));
 
@@ -45,9 +44,9 @@ public class Challenge {
                 lettersToType(generateTextWithSpecialCharacters(), language, loggedInUser);
                 break;
             default:
-                System.out.println((language == Menu.Language.SWEDISH ? "Ogiltig utmaningstyp. Avslutar..." : "Invalid challenge type. Exiting..."));
+                System.out.println((language == Menu.Language.SWEDISH ? "Ogiltig utmaningstyp. Återgår till huvudmenyn..." : "Invalid challenge type. Returning to main menu..."));
+                break;
         }
-        return loggedInUser;
     }
 
     private void lettersToType(String text, Menu.Language language, User loggedInUser) {
@@ -57,6 +56,20 @@ public class Challenge {
         long startTime = System.nanoTime();
         String userTypedText = getUserInput();
         long endTime = System.nanoTime();
+
+        int correct = 0;
+        int inOrderCorrect = 0;
+        boolean isCorrect = true;
+        for (int i = 0; i < text.length(); i++) {
+            if (i < userTypedText.length() && text.charAt(i) == userTypedText.charAt(i)) {
+                correct++;
+                if (isCorrect) {
+                    inOrderCorrect++;
+                }
+            } else {
+                isCorrect = false;
+            }
+        }
 
         while (!userTypedText.equals(text)) {
             System.out.println((language == Menu.Language.SWEDISH ? "Felaktigt. Skriv om hela utmaningen:" : "Incorrect. Retype the entire challenge:"));
@@ -71,6 +84,8 @@ public class Challenge {
         System.out.println((language == Menu.Language.SWEDISH ? "Tid tagen: " : "Time taken: ") + totalTimeInSeconds + " seconds.");
         System.out.println((language == Menu.Language.SWEDISH ? "Ord per minut: " : "Words per minute: ") + wordsPerMinute);
 
+        // Uppdatera användarens statistik
+        loggedInUser.getUserStatistics().updateStats(totalTimeInSeconds, correct, inOrderCorrect);
     }
 
     private int calculateWordsPerMinute(int textLength, double totalTimeInSeconds) {
@@ -91,7 +106,7 @@ public class Challenge {
     private String generateRandomWords(int wordCount) {
         StringBuilder randomWords = new StringBuilder();
         for (int i = 0; i < wordCount; i++) {
-            randomWords.append(WordRepository.getRandomWord()).append(" ");
+            randomWords.append(generateRandomLetters(5)).append(" ");
         }
         return randomWords.toString().trim();
     }
@@ -111,9 +126,7 @@ public class Challenge {
         return scanner.nextLine();
     }
 
-    public void lettersToType() {
-    }
-
-    public void startChallenge() {
+    private String getLocalizedText(Menu.Language language, String swedish, String english) {
+        return language == Menu.Language.SWEDISH ? swedish : english;
     }
 }
