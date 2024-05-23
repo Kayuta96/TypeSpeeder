@@ -37,8 +37,6 @@ public class RankingManager {
         int correctCount = userStatistics.getCorrectCount();
         int consecutiveCorrectCount = userStatistics.getConsecutiveCorrectCount();
 
-        int score = (int) ((speed * 2) + (correctCount * 3) + (consecutiveCorrectCount * 5));
-
-        return score;
+        return (int) ((speed * 2) + (correctCount * 3) + (consecutiveCorrectCount * 5));
     }
 }
