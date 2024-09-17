@@ -11,12 +11,12 @@ import java.util.Scanner;
 
 @Service
 public class Menu implements MenuService {
-    private final UserRepository userRepository;
-    private final EntityManager entityManager;
-    private final RankingService rankingService;
+    private UserRepository userRepository;
+    private EntityManager entityManager;
+    private RankingService rankingService;
     private User loggedInUser;
     private Language language;
-    private final Scanner scanner;
+    private Scanner scanner;
 
     @Autowired
     public Menu(UserRepository userRepository, EntityManager entityManager, RankingService rankingService) {
@@ -24,6 +24,9 @@ public class Menu implements MenuService {
         this.entityManager = entityManager;
         this.rankingService = rankingService;
         this.scanner = new Scanner(System.in);
+    }
+
+    public Menu() {
     }
 
     public void start() {
@@ -160,12 +163,8 @@ public class Menu implements MenuService {
             switch (userInput) {
                 case 1 -> startChallenge();
                 case 2 -> displayRanking();
-                case 3 -> {
-                    // TODO: Implement account management
-                }
-                case 4 -> {
-                    // TODO: Implement settings
-                }
+                case 3 -> manageAccount();
+                case 4 -> settings();
                 case 5 -> {
                     logoutUser();
                     return;
@@ -207,6 +206,57 @@ public class Menu implements MenuService {
         for (User user : rankedUsers) {
             System.out.println(rank + ". " + user.getPlayerName() + " - " + rankingService.calculateCompositeScore(user));
             rank++;
+        }
+    }
+
+    private void manageAccount() {
+        System.out.println(getLocalizedText("Manage Account", "Hantera konto"));
+        System.out.println("1. " + getLocalizedText("Change Name", "Ändra namn"));
+        System.out.println("2. " + getLocalizedText("Change Password", "Ändra lösenord"));
+        System.out.println("3. " + getLocalizedText("Back to Menu", "Tillbaka till menyn"));
+
+        int choice = getUserInput();
+        if (choice == -1) return;
+
+        switch (choice) {
+            case 1 -> changeName();
+            case 2 -> changePassword();
+            case 3 -> displayMenu();
+            default -> System.out.println(getInvalidChoiceMessage());
+        }
+    }
+
+    private void changeName() {
+        System.out.print(getLocalizedText("Enter new player name: ", "Ange nytt spelarnamn:"));
+        String newPlayerName = scanner.next();
+        loggedInUser.setPlayerName(newPlayerName);
+        userRepository.save(loggedInUser);
+        System.out.println(getLocalizedText("Player name updated successfully.", "Spelarnamnet har uppdaterats."));
+    }
+
+    private void changePassword() {
+        System.out.print(getLocalizedText("Enter new password: ", "Ange nytt lösenord:"));
+        String newPassword = scanner.next();
+        loggedInUser.setPassword(newPassword);
+        userRepository.save(loggedInUser);
+        System.out.println(getLocalizedText("Password updated successfully.", "Lösenordet har uppdaterats."));
+    }
+
+    private void settings() {
+        System.out.println(getLocalizedText("Settings", "Inställningar"));
+        System.out.println("1. " + getLocalizedText("Change Language", "Ändra språk"));
+        System.out.println("2. " + getLocalizedText("Back to Menu", "Tillbaka till menyn"));
+
+        int choice = getUserInput();
+        if (choice == -1) return;
+
+        switch (choice) {
+            case 1 -> {
+                chooseLanguage();
+                System.out.println(getLocalizedText("Language changed successfully.", "Språket har ändrats."));
+            }
+            case 2 -> displayMenu();
+            default -> System.out.println(getInvalidChoiceMessage());
         }
     }
 

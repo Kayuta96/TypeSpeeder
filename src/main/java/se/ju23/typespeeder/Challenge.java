@@ -3,6 +3,10 @@ package se.ju23.typespeeder;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Service;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
 
 import java.util.Random;
 import java.util.Scanner;
@@ -35,13 +39,13 @@ public class Challenge {
 
         switch (challengeType) {
             case 1:
-                lettersToType(generateRandomLetters(50), language, loggedInUser);
+                lettersToType(generateRandomLetters(20), language, loggedInUser);
                 break;
             case 2:
-                lettersToType(generateRandomWords(5), language, loggedInUser);
+                lettersToType(generateRandomWords(5, language), language, loggedInUser);
                 break;
             case 3:
-                lettersToType(generateTextWithSpecialCharacters(), language, loggedInUser);
+                lettersToType(generateTextWithSpecialCharacters(language), language, loggedInUser);
                 break;
             default:
                 System.out.println((language == Menu.Language.SWEDISH ? "Ogiltig utmaningstyp. Återgår till huvudmenyn..." : "Invalid challenge type. Returning to main menu..."));
@@ -84,8 +88,6 @@ public class Challenge {
         System.out.println((language == Menu.Language.SWEDISH ? "Tid tagen: " : "Time taken: ") + totalTimeInSeconds + " seconds.");
         System.out.println((language == Menu.Language.SWEDISH ? "Ord per minut: " : "Words per minute: ") + wordsPerMinute);
 
-        // Uppdatera användarens statistik
-        loggedInUser.getUserStatistics().updateStats(totalTimeInSeconds, correct, inOrderCorrect);
     }
 
     private int calculateWordsPerMinute(int textLength, double totalTimeInSeconds) {
@@ -103,21 +105,37 @@ public class Challenge {
         return randomLetters.toString();
     }
 
-    private String generateRandomWords(int wordCount) {
+    private String generateRandomWords(int wordCount, Menu.Language language) {
         StringBuilder randomWords = new StringBuilder();
+        List<String> words = (language == Menu.Language.SWEDISH) ? SWEDISH_WORDS : ENGLISH_WORDS;
+
         for (int i = 0; i < wordCount; i++) {
-            randomWords.append(generateRandomLetters(5)).append(" ");
+            String randomWord = words.get(random.nextInt(words.size()));
+            randomWords.append(randomWord).append(" ");
         }
         return randomWords.toString().trim();
     }
 
-    private String generateTextWithSpecialCharacters() {
+    private String generateTextWithSpecialCharacters(Menu.Language language) {
         StringBuilder text = new StringBuilder();
-        int textLength = random.nextInt(50) + 50;
+        List<String> words = (language == Menu.Language.SWEDISH) ? SWEDISH_WORDS : ENGLISH_WORDS;
+
+        int textLength = random.nextInt(5) + 5;
+
         for (int i = 0; i < textLength; i++) {
-            char currentChar = random.nextBoolean() ? SPECIAL_CHARACTERS.charAt(random.nextInt(SPECIAL_CHARACTERS.length())) : (char) (random.nextInt(26) + 'a');
-            text.append(currentChar);
+            // Välj ett slumpmässigt ord
+            String randomWord = words.get(random.nextInt(words.size()));
+            text.append(randomWord);
+
+            if (random.nextBoolean()) {
+                text.append(SPECIAL_CHARACTERS.charAt(random.nextInt(SPECIAL_CHARACTERS.length())));
+            }
+
+            if (i < textLength - 1) {
+                text.append(" ");
+            }
         }
+
         return text.toString();
     }
 
@@ -128,5 +146,20 @@ public class Challenge {
 
     private String getLocalizedText(Menu.Language language, String swedish, String english) {
         return language == Menu.Language.SWEDISH ? swedish : english;
+    }
+
+
+    private static final List<String> SWEDISH_WORDS = Arrays.asList(
+            "hund", "katt", "bil", "bok", "blomma", "träd", "hus", "stjärna", "sjö", "fisk"
+    );
+
+    private static final List<String> ENGLISH_WORDS = Arrays.asList(
+            "dog", "cat", "car", "book", "flower", "tree", "house", "star", "lake", "fish"
+    );
+
+    public void startChallenge() {
+    }
+
+    public void lettersToType() {
     }
 }
