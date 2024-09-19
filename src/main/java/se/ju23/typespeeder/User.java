@@ -11,6 +11,8 @@ public class User {
     private String username;
     private String password;
 
+    private int points;
+    private int level;
     @Column(name = "player_name")
     private String playerName;
 
@@ -20,14 +22,38 @@ public class User {
     public User() {
         this.userStatistics = new UserStatistics();
         this.userStatistics.setUser(this);
+        this.points = 0;
+        this.level = 1; // Starta på nivå 1
     }
 
     public User(String username, String password, String playerName) {
+        this();
         this.username = username;
         this.password = password;
         this.playerName = playerName;
-        this.userStatistics = new UserStatistics();
-        this.userStatistics.setUser(this);
+    }
+
+    public void addPoints(int points) {
+        this.points += points;
+
+        // Kolla om användaren når 100 poäng för att levela upp
+        if (this.points >= 100) {
+            levelUp();
+        }
+    }
+
+    private void levelUp() {
+        this.level++;
+        this.points = 0; // Återställ poängen till 0 efter nivåuppgång
+        System.out.println("Grattis! Du har nått nivå " + level + "!"); // Meddelande vid nivåuppgång
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public int getLevel() {
+        return level;
     }
 
     // Getters and setters
@@ -72,6 +98,14 @@ public class User {
         userStatistics.setUser(this);
     }
 
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -79,6 +113,8 @@ public class User {
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", playerName='" + playerName + '\'' +
+                ", points=" + points +
+                ", level=" + level +
                 '}';
     }
 }

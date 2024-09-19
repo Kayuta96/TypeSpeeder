@@ -12,12 +12,19 @@ public class UserStatistics {
     private int totalCorrect;
     private int totalInOrderCorrect;
 
+    private int correctCount;
+    private double speed;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
     public UserStatistics() {
     }
+
+    @Column(name = "consecutive_correct_count")
+    private int consecutiveCorrectCount;
+
 
     public Long getId() {
         return id;
@@ -57,6 +64,30 @@ public class UserStatistics {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(double speed) {
+        this.speed = speed;
+    }
+
+    public int getCorrectCount() {
+        return correctCount;
+    }
+
+    public void setCorrectCount(int correctCount) {
+        this.correctCount = correctCount;
+    }
+
+    public int getConsecutiveCorrectCount() {
+        return consecutiveCorrectCount;
+    }
+
+    public void setConsecutiveCorrectCount(int consecutiveCorrectCount) {
+        this.consecutiveCorrectCount = consecutiveCorrectCount;
     }
 
     public void updateStats(double speed, int correct, int inOrderCorrect) {
