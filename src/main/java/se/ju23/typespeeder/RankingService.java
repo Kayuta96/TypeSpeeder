@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 public class RankingService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private UserStatisticsRepository userStatisticsRepository;
 
     public List<User> getRankedUsers() {
         List<User> users = userRepository.findAll();
@@ -18,6 +20,11 @@ public class RankingService {
         users.sort(Comparator.comparingDouble(this::calculateCompositeScore).reversed());
 
         return users;
+    }
+
+    public List<UserStatistics> getRankedUsersByWPM() {
+        // Hämta alla UserStatistics och sortera efter averageSpeed
+        return userStatisticsRepository.findAllByOrderByAverageSpeedDesc();
     }
 
     public double calculateCompositeScore(User user) {

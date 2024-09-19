@@ -14,6 +14,7 @@ public class MenuPerformanceTest {
     private static final int MAX_EXECUTION_TIME_MENU = 1;
     private static final int MAX_EXECUTION_TIME_LANGUAGE_SELECTION = 100;
     private static final int MILLISECONDS_CONVERSION = 1_000_000;
+    private User loggedInUser;
 
     @Test
     public void testGetMenuOptionsExecutionTime() {
@@ -39,7 +40,8 @@ public class MenuPerformanceTest {
         long startTime = System.nanoTime();
 
         Menu menu = new Menu();
-        menu.displayMenu();
+        
+        menu.displayMenu(loggedInUser);
 
         long endTime = System.nanoTime();
         long duration = (endTime - startTime) / MILLISECONDS_CONVERSION;

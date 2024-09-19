@@ -2,6 +2,7 @@ package se.ju23.typespeeder;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -11,18 +12,27 @@ public class Challenge {
     private static final Random random = new Random();
     private static final String LETTERS = "abcdefghijklmnopqrstuvwxyz";
     private static final String SPECIAL_CHARACTERS = "@&?#";
+    Menu menu;
+
 
     @PersistenceContext
     private EntityManager entityManager;
 
+    private UserRepository userRepository;
+
+    @Autowired
+    public Challenge(EntityManager entityManager, UserRepository userRepository) {
+        this.entityManager = entityManager;
+        this.userRepository = userRepository;
+    }
 
     public Challenge(EntityManager entityManager) {
-        this.entityManager = entityManager;
     }
 
     public Challenge() {
-        
+
     }
+
 
     public void startChallenge(Menu.Language language, User loggedInUser) {
         if (loggedInUser == null) {
@@ -41,7 +51,7 @@ public class Challenge {
             challengeType = scanner.nextInt();
         } catch (InputMismatchException e) {
             System.out.println(getLocalizedText(language, "Ogiltig inmatning. Försök igen.", "Invalid input. Please try again."));
-            scanner.nextLine(); 
+            scanner.nextLine();
             return;
         }
 
@@ -65,7 +75,6 @@ public class Challenge {
 
         System.out.println(getLocalizedText(language, "Utmaning avslutad!", "Challenge completed!"));
     }
-
 
     private void lettersToType(String text, Menu.Language language, User loggedInUser) {
         System.out.println(getLocalizedText(language, "Skriv följande så snabbt du kan:", "Type the following as fast as you can:"));
@@ -97,19 +106,9 @@ public class Challenge {
             System.out.println(getLocalizedText(language, "Felaktigt. Du förlorade 20 poäng.", "Incorrect. You lost 20 points."));
         }
 
-        saveUser(loggedInUser);
-
         System.out.println(getLocalizedText(language, "Dina poäng: ", "Your points: ") + loggedInUser.getPoints());
         System.out.println(getLocalizedText(language, "Tid tagen: ", "Time taken: ") + totalTimeInSeconds + " seconds.");
         System.out.println(getLocalizedText(language, "Ord per minut: ", "Words per minute: ") + wordsPerMinute);
-    }
-
-    private void saveUser(User user) {
-        if (user.getId() == null) {
-            entityManager.persist(user);
-        } else {
-            entityManager.merge(user);
-        }
     }
 
     private int calculateWordsPerMinute(int textLength, double totalTimeInSeconds) {

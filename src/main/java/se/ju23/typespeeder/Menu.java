@@ -19,6 +19,9 @@ public class Menu implements MenuService {
     private Scanner scanner;
 
     @Autowired
+    private UserStatisticsRepository userStatisticsRepository;
+
+    @Autowired
     public Menu(UserRepository userRepository, EntityManager entityManager, RankingService rankingService) {
         this.userRepository = userRepository;
         this.entityManager = entityManager;
@@ -62,8 +65,10 @@ public class Menu implements MenuService {
                 throw new Exception();
             }
 
+            loggedInUser.getPlayerName();
+
             System.out.println(getLocalizedText("Login successful. Welcome, ", "Inloggning lyckades. Välkommen, ") + loggedInUser.getPlayerName() + "!");
-            displayMenu();
+            displayMenu(loggedInUser);
         } catch (Exception e) {
             System.out.println(getLocalizedText("Login failed. Please try again.", "Inloggningen misslyckades. Försök igen."));
         }
@@ -95,7 +100,7 @@ public class Menu implements MenuService {
         User newUser = new User(username, password, playerName);
         userRepository.save(newUser);
         System.out.println(getLocalizedText("User registered successfully.", "Användaren registrerades"));
-        displayMenu();
+        displayMenu(loggedInUser);
     }
 
     private void chooseLanguage() {
@@ -148,7 +153,7 @@ public class Menu implements MenuService {
     }
 
     @Override
-    public void displayMenu() {
+    public void displayMenu(User loggedInUser) {
         while (true) {
             System.out.println(getLocalizedText("Options:", "Alternativ:"));
             List<String> menuOptions = getMenuOptions();
@@ -200,11 +205,12 @@ public class Menu implements MenuService {
     }
 
     private void displayRanking() {
-        List<User> rankedUsers = rankingService.getRankedUsers();
-        System.out.println(getLocalizedText("Ranking List:", "Rankninglista:"));
+        List<UserStatistics> rankedUsers = userStatisticsRepository.findAllByOrderByAverageSpeedDesc();
+        System.out.println(getLocalizedText("Ranking List (by WPM):", "Rankninglista (efter WPM):"));
         int rank = 1;
-        for (User user : rankedUsers) {
-            System.out.println(rank + ". " + user.getPlayerName() + " - " + rankingService.calculateCompositeScore(user));
+        for (UserStatistics stats : rankedUsers) {
+            User user = stats.getUser();
+            System.out.println(rank + ". " + user.getPlayerName() + " - WPM: " + stats.getAverageSpeed());
             rank++;
         }
     }
@@ -221,7 +227,7 @@ public class Menu implements MenuService {
         switch (choice) {
             case 1 -> changeName();
             case 2 -> changePassword();
-            case 3 -> displayMenu();
+            case 3 -> displayMenu(loggedInUser);
             default -> System.out.println(getInvalidChoiceMessage());
         }
     }
@@ -255,7 +261,7 @@ public class Menu implements MenuService {
                 chooseLanguage();
                 System.out.println(getLocalizedText("Language changed successfully.", "Språket har ändrats."));
             }
-            case 2 -> displayMenu();
+            case 2 -> displayMenu(loggedInUser);
             default -> System.out.println(getInvalidChoiceMessage());
         }
     }

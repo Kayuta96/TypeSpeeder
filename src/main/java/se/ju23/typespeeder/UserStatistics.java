@@ -15,7 +15,7 @@ public class UserStatistics {
     private int correctCount;
     private double speed;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
 
