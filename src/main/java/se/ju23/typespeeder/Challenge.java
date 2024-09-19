@@ -20,6 +20,10 @@ public class Challenge {
         this.entityManager = entityManager;
     }
 
+    public Challenge() {
+        
+    }
+
     public void startChallenge(Menu.Language language, User loggedInUser) {
         if (loggedInUser == null) {
             System.out.println(getLocalizedText(language, "Du måste vara inloggad för att starta en utmaning.", "You need to be logged in to start a challenge."));
@@ -102,9 +106,9 @@ public class Challenge {
 
     private void saveUser(User user) {
         if (user.getId() == null) {
-            entityManager.persist(user); // Persist för nya användare
+            entityManager.persist(user);
         } else {
-            entityManager.merge(user); // Merge för befintliga användare
+            entityManager.merge(user);
         }
     }
 
@@ -164,8 +168,8 @@ public class Challenge {
     }
 
     private String getUserInput() {
-        Scanner scanner = new Scanner(System.in); // Återanvänd gärna en delad scanner om möjligt
-        return scanner.nextLine().trim(); // trim() för att ta bort onödiga mellanslag
+        Scanner scanner = new Scanner(System.in);
+        return scanner.nextLine().trim();
     }
 
     private String getLocalizedText(Menu.Language language, String swedish, String english) {
@@ -179,4 +183,10 @@ public class Challenge {
     private static final List<String> ENGLISH_WORDS = Arrays.asList(
             "dog", "cat", "car", "book", "flower", "tree", "house", "star", "lake", "fish"
     );
+
+    public void startChallenge() {
+    }
+
+    public void lettersToType() {
+    }
 }
