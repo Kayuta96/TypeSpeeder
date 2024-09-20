@@ -9,7 +9,7 @@
     </parent>
     <groupId>se.ju23</groupId>
     <artifactId>TypeSpeeder</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
     <name>TypeSpeeder</name>
     <description>TypeSpeeder</description>
     <properties>

@@ -18,6 +18,8 @@ public class Menu implements MenuService {
     private Language language;
     private Scanner scanner;
 
+    private UserService userService;
+
     @Autowired
     private UserStatisticsRepository userStatisticsRepository;
 
@@ -27,6 +29,7 @@ public class Menu implements MenuService {
         this.entityManager = entityManager;
         this.rankingService = rankingService;
         this.scanner = new Scanner(System.in);
+
     }
 
     public Menu() {
@@ -206,7 +209,7 @@ public class Menu implements MenuService {
     }
 
     private void startChallenge() {
-        Challenge challenge = new Challenge(entityManager, userRepository, this);
+        Challenge challenge = new Challenge(entityManager, userRepository, this, userService);
         System.out.println("loggedInUser before challenge: " + (loggedInUser != null ? loggedInUser.getUsername() : "null"));
         challenge.startChallenge(language, loggedInUser);
         System.out.println("loggedInUser after challenge: " + (loggedInUser != null ? loggedInUser.getUsername() : "null"));    }

@@ -13,6 +13,7 @@ public class Challenge {
     private static final String LETTERS = "abcdefghijklmnopqrstuvwxyz";
     private static final String SPECIAL_CHARACTERS = "@&?#";
     private Menu menu;
+    private UserService userService;
 
 
     @PersistenceContext
@@ -21,10 +22,11 @@ public class Challenge {
     private UserRepository userRepository;
 
     @Autowired
-    public Challenge(EntityManager entityManager, UserRepository userRepository, Menu menu) {
+    public Challenge(EntityManager entityManager, UserRepository userRepository, Menu menu,UserService userService) {
         this.entityManager = entityManager;
         this.userRepository = userRepository;
         this.menu = menu;
+        this.userService = userService;
     }
 
     public Challenge(EntityManager entityManager) {
@@ -90,24 +92,31 @@ public class Challenge {
         int wordsPerMinute = calculateWordsPerMinute(text.length(), totalTimeInSeconds);
 
         boolean typedCorrectly = userTypedText.equals(text);
-        int basePoints = 20;
+        int basePoints = 20; // Basen för hur mycket poäng
+        int pointsEarned = 0;
 
         if (typedCorrectly) {
-            loggedInUser.addPoints(basePoints);
+            pointsEarned = basePoints;
             System.out.println(getLocalizedText(language, "Grattis! Du skrev det korrekt.", "Congratulations! You typed it correctly."));
+
+            // Addera bonus poäng baserat på WPM
             if (wordsPerMinute >= 80) {
-                loggedInUser.addPoints(10);
+                pointsEarned += 10; // Bonus för mer än 80 WPM
                 System.out.println(getLocalizedText(language, "Du får en bonus på 10 poäng för 80 WPM eller mer.", "You get a bonus of 10 points for 80 WPM or more."));
             } else if (wordsPerMinute < 50) {
-                loggedInUser.addPoints(-10);
+                pointsEarned -= 10; // Straff för mindre än 50 WPM
                 System.out.println(getLocalizedText(language, "Du förlorar 10 poäng för att ha under 50 WPM.", "You lose 10 points for having under 50 WPM."));
             }
         } else {
-            loggedInUser.addPoints(-20);
+            pointsEarned = -20; // Straff för att man skriver fel
             System.out.println(getLocalizedText(language, "Felaktigt. Du förlorade 20 poäng.", "Incorrect. You lost 20 points."));
         }
-        userRepository.save(loggedInUser);
 
+        loggedInUser.addPoints(pointsEarned);
+        userRepository.save(loggedInUser); // Spara users poäng
+        //userService.updateUserStatistics(loggedInUser, wordsPerMinute); //Leder till utloggning av användaren
+
+        // Visa resultaten
         System.out.println(getLocalizedText(language, "Dina poäng: ", "Your points: ") + loggedInUser.getPoints());
         System.out.println(getLocalizedText(language, "Tid tagen: ", "Time taken: ") + totalTimeInSeconds + " seconds.");
         System.out.println(getLocalizedText(language, "Ord per minut: ", "Words per minute: ") + wordsPerMinute);
@@ -124,7 +133,7 @@ public class Challenge {
 
     private String generateRandomLetters(int count, int level) {
         // Öka antalet bokstäver baserat på nivån
-        int adjustedCount = count + (level - 1) * 5; // Lägg till 5 bokstäver per nivå
+        int adjustedCount = count + (level - 1) * 5; // Lägg till 5 bokstäver per level
         StringBuilder randomLetters = new StringBuilder();
         for (int i = 0; i < adjustedCount; i++) {
             randomLetters.append(LETTERS.charAt(random.nextInt(LETTERS.length())));
@@ -134,7 +143,7 @@ public class Challenge {
 
     private String generateRandomWords(int wordCount, Menu.Language language, int level) {
         // Öka antalet ord baserat på nivån
-        int adjustedWordCount = wordCount + (level - 1); // Lägg till 1 ord per nivå
+        int adjustedWordCount = wordCount + (level - 1); // Lägg till 1 ord per level
         StringBuilder randomWords = new StringBuilder();
         List<String> words = (language == Menu.Language.SWEDISH) ? SWEDISH_WORDS : ENGLISH_WORDS;
 
@@ -150,7 +159,7 @@ public class Challenge {
         List<String> words = (language == Menu.Language.SWEDISH) ? SWEDISH_WORDS : ENGLISH_WORDS;
 
         // Öka längden på texten baserat på nivån
-        int textLength = random.nextInt(5 + level) + 5; // Minimalt 5 ord, öka med nivån
+        int textLength = random.nextInt(5 + level) + 5; // Minimalt 5 ord, öka med level
 
         for (int i = 0; i < textLength; i++) {
             String randomWord = words.get(random.nextInt(words.size()));
@@ -170,7 +179,7 @@ public class Challenge {
 
     private String getUserInput() {
         Scanner scanner = menu.getScanner();
-        return scanner.nextLine().trim();  // Capture input and trim whitespace
+        return scanner.nextLine().trim();
 
     }
 
