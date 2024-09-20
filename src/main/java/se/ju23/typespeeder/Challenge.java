@@ -13,16 +13,18 @@ public class Challenge {
     private static final String LETTERS = "abcdefghijklmnopqrstuvwxyz";
     private static final String SPECIAL_CHARACTERS = "@&?#";
     private Menu menu;
-    private UserService userService;
 
+    @Autowired
+    private UserService userService;
 
     @PersistenceContext
     private EntityManager entityManager;
 
     private UserRepository userRepository;
+    private int wordsPerMinute;
 
     @Autowired
-    public Challenge(EntityManager entityManager, UserRepository userRepository, Menu menu,UserService userService) {
+    public Challenge(EntityManager entityManager, UserRepository userRepository, Menu menu, UserService userService) {
         this.entityManager = entityManager;
         this.userRepository = userRepository;
         this.menu = menu;
@@ -33,47 +35,52 @@ public class Challenge {
     }
 
     public Challenge() {
-
     }
-
 
     public void startChallenge(Menu.Language language, User loggedInUser) {
         if (loggedInUser == null) {
-            System.out.println(getLocalizedText(language, "Du måste vara inloggad för att starta en utmaning.", "You need to be logged in to start a challenge."));
+            System.out.println(menu.getLocalizedText(language, "Du måste vara inloggad för att starta en utmaning.", "You need to be logged in to start a challenge."));
             return;
         }
-        Scanner scanner = menu.getScanner();
-        System.out.println(getLocalizedText(language, "Välj en utmaningstyp:", "Select a challenge type:"));
-        System.out.println("1. " + getLocalizedText(language, "Bokstavsutmaning", "Letters Challenge"));
-        System.out.println("2. " + getLocalizedText(language, "Orduutmaning", "Words Challenge"));
-        System.out.println("3. " + getLocalizedText(language, "Särskilda tecken utmaning", "Special Characters Challenge"));
 
-        int challengeType = -1;
+        System.out.println("Before update: " + loggedInUser.getUsername());
+
         try {
-            challengeType = scanner.nextInt();
-            scanner.nextLine();
-        } catch (InputMismatchException e) {
-            System.out.println(getLocalizedText(language, "Ogiltig inmatning. Försök igen.", "Invalid input. Please try again."));
-            scanner.nextLine();
-            return;
-        }
+            // Challenge type selection
+            Scanner scanner = menu.getScanner();
+            System.out.println(getLocalizedText(language, "Välj en utmaningstyp:", "Select a challenge type:"));
+            System.out.println("1. " + getLocalizedText(language, "Bokstavsutmaning", "Letters Challenge"));
+            System.out.println("2. " + getLocalizedText(language, "Orduutmaning", "Words Challenge"));
+            System.out.println("3. " + getLocalizedText(language, "Särskilda tecken utmaning", "Special Characters Challenge"));
 
-        switch (challengeType) {
-            case 1:
-                System.out.println(getLocalizedText(language, "Startar bokstavsutmaning...", "Starting letters challenge..."));
-                lettersToType(generateRandomLetters(20, loggedInUser.getLevel()), language, loggedInUser);
-                break;
-            case 2:
-                System.out.println(getLocalizedText(language, "Startar orduutmaning...", "Starting words challenge..."));
-                lettersToType(generateRandomWords(5, language, loggedInUser.getLevel()), language, loggedInUser);
-                break;
-            case 3:
-                System.out.println(getLocalizedText(language, "Startar särskilda tecken-utmaning...", "Starting special characters challenge..."));
-                lettersToType(generateTextWithSpecialCharacters(language, loggedInUser.getLevel()), language, loggedInUser);
-                break;
-            default:
-                System.out.println(getLocalizedText(language, "Ogiltig utmaningstyp. Återgår till huvudmenyn...", "Invalid challenge type. Returning to main menu..."));
-                break;
+            int challengeType = scanner.nextInt();
+            scanner.nextLine(); // Clear newline
+
+            // Perform the selected challenge
+            switch (challengeType) {
+                case 1 -> {
+                    System.out.println(getLocalizedText(language, "Startar bokstavsutmaning...", "Starting letters challenge..."));
+                    lettersToType(generateRandomLetters(20, loggedInUser.getLevel()), language, loggedInUser);
+                }
+                case 2 -> {
+                    System.out.println(getLocalizedText(language, "Startar orduutmaning...", "Starting words challenge..."));
+                    lettersToType(generateRandomWords(5, language, loggedInUser.getLevel()), language, loggedInUser);
+                }
+                case 3 -> {
+                    System.out.println(getLocalizedText(language, "Startar särskilda tecken-utmaning...", "Starting special characters challenge..."));
+                    lettersToType(generateTextWithSpecialCharacters(language, loggedInUser.getLevel()), language, loggedInUser);
+                }
+                default -> System.out.println(getLocalizedText(language, "Ogiltig utmaningstyp. Återgår till huvudmenyn...", "Invalid challenge type. Returning to main menu..."));
+            }
+
+            // Uppdatera användarstatistik i databasen
+            System.out.println("Uppdaterar användarstatistik med WPM: " + wordsPerMinute);
+            userService.updateUserStatistics(loggedInUser, wordsPerMinute, language);
+            System.out.println("Användarstatistik uppdaterad.");
+
+        } catch (Exception e) {
+            System.out.println("Exception under utmaningen: " + e.getMessage());
+            e.printStackTrace();
         }
 
         System.out.println(getLocalizedText(language, "Utmaning avslutad!", "Challenge completed!"));
@@ -89,7 +96,7 @@ public class Challenge {
 
         long totalTime = endTime - startTime;
         double totalTimeInSeconds = totalTime / 1_000_000_000.0;
-        int wordsPerMinute = calculateWordsPerMinute(text.length(), totalTimeInSeconds);
+        wordsPerMinute = calculateWordsPerMinute(text.length(), totalTimeInSeconds); // Beräkna WPM
 
         boolean typedCorrectly = userTypedText.equals(text);
         int basePoints = 20; // Basen för hur mycket poäng
@@ -114,8 +121,6 @@ public class Challenge {
 
         loggedInUser.addPoints(pointsEarned);
         userRepository.save(loggedInUser); // Spara users poäng
-
-        //userService.updateUserStatistics(loggedInUser, wordsPerMinute); //Leder till utloggning av användaren
 
         // Visa resultaten
         System.out.println(getLocalizedText(language, "Dina poäng: ", "Your points: ") + loggedInUser.getPoints());
@@ -181,7 +186,6 @@ public class Challenge {
     private String getUserInput() {
         Scanner scanner = menu.getScanner();
         return scanner.nextLine().trim();
-
     }
 
     private String getLocalizedText(Menu.Language language, String swedish, String english) {

@@ -24,7 +24,7 @@ public class RankingService {
 
     public List<UserStatistics> getRankedUsersByWPM() {
         // Hämta alla UserStatistics och sortera efter averageSpeed
-        return userStatisticsRepository.findAllByOrderByAverageSpeedDesc();
+        return userStatisticsRepository.findAllByOrderByBestWpmDesc();
     }
 
     public double calculateCompositeScore(User user) {

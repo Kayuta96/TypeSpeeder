@@ -11,9 +11,11 @@ public class UserStatistics {
     private double averageSpeed;
     private int totalCorrect;
     private int totalInOrderCorrect;
-
     private int correctCount;
     private double speed;
+
+    @Column(name = "bestwpm")
+    private int bestWpm;
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
@@ -25,6 +27,15 @@ public class UserStatistics {
     @Column(name = "consecutive_correct_count")
     private int consecutiveCorrectCount;
 
+    public int getBestWpm() {
+        return bestWpm;
+    }
+
+    public void setBestWpm(int bestWpm) {
+        this.bestWpm = bestWpm;
+    }
+
+    // Other getters and setters...
 
     public Long getId() {
         return id;
@@ -90,9 +101,15 @@ public class UserStatistics {
         this.consecutiveCorrectCount = consecutiveCorrectCount;
     }
 
+
     public void updateStats(double speed, int correct, int inOrderCorrect) {
         this.averageSpeed = (this.averageSpeed * (this.totalCorrect + correct) + speed) / (this.totalCorrect + correct);
         this.totalCorrect += correct;
         this.totalInOrderCorrect += inOrderCorrect;
+
+
+        if (speed > this.bestWpm) {
+            this.bestWpm = (int) speed;
+        }
     }
 }
