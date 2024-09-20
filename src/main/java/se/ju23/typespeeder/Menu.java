@@ -30,6 +30,12 @@ public class Menu implements MenuService {
     }
 
     public Menu() {
+        this.scanner = new Scanner(System.in);
+
+    }
+
+    public Scanner getScanner() {
+        return this.scanner;
     }
 
     public void start() {
@@ -200,18 +206,33 @@ public class Menu implements MenuService {
     }
 
     private void startChallenge() {
-        Challenge challenge = new Challenge(entityManager);
+        Challenge challenge = new Challenge(entityManager, userRepository, this);
+        System.out.println("loggedInUser before challenge: " + (loggedInUser != null ? loggedInUser.getUsername() : "null"));
         challenge.startChallenge(language, loggedInUser);
-    }
+        System.out.println("loggedInUser after challenge: " + (loggedInUser != null ? loggedInUser.getUsername() : "null"));    }
 
     private void displayRanking() {
         List<UserStatistics> rankedUsers = userStatisticsRepository.findAllByOrderByAverageSpeedDesc();
         System.out.println(getLocalizedText("Ranking List (by WPM):", "Rankninglista (efter WPM):"));
         int rank = 1;
+        boolean userIncluded = false;
+
         for (UserStatistics stats : rankedUsers) {
             User user = stats.getUser();
+            if (user.equals(loggedInUser)) {
+                userIncluded = true;
+            }
             System.out.println(rank + ". " + user.getPlayerName() + " - WPM: " + stats.getAverageSpeed());
             rank++;
+        }
+
+        if (!userIncluded) {
+            UserStatistics userStats = userStatisticsRepository.findByUser(loggedInUser);
+            if (userStats != null) {
+                System.out.println("N/A. " + loggedInUser.getPlayerName() + " - WPM: " + userStats.getAverageSpeed());
+            } else {
+                System.out.println("N/A. " + loggedInUser.getPlayerName() + " - WPM: " + getLocalizedText("No statistics available", "Inga statistik tillgänglig"));
+            }
         }
     }
 

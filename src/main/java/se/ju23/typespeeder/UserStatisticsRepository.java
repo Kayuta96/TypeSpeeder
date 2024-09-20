@@ -5,4 +5,5 @@ import java.util.List;
 
 public interface UserStatisticsRepository extends JpaRepository<UserStatistics, Long> {
     List<UserStatistics> findAllByOrderByAverageSpeedDesc();
+    UserStatistics findByUser(User user);
 }

@@ -12,7 +12,7 @@ public class Challenge {
     private static final Random random = new Random();
     private static final String LETTERS = "abcdefghijklmnopqrstuvwxyz";
     private static final String SPECIAL_CHARACTERS = "@&?#";
-    Menu menu;
+    private Menu menu;
 
 
     @PersistenceContext
@@ -21,9 +21,10 @@ public class Challenge {
     private UserRepository userRepository;
 
     @Autowired
-    public Challenge(EntityManager entityManager, UserRepository userRepository) {
+    public Challenge(EntityManager entityManager, UserRepository userRepository, Menu menu) {
         this.entityManager = entityManager;
         this.userRepository = userRepository;
+        this.menu = menu;
     }
 
     public Challenge(EntityManager entityManager) {
@@ -39,8 +40,7 @@ public class Challenge {
             System.out.println(getLocalizedText(language, "Du måste vara inloggad för att starta en utmaning.", "You need to be logged in to start a challenge."));
             return;
         }
-
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = menu.getScanner();
         System.out.println(getLocalizedText(language, "Välj en utmaningstyp:", "Select a challenge type:"));
         System.out.println("1. " + getLocalizedText(language, "Bokstavsutmaning", "Letters Challenge"));
         System.out.println("2. " + getLocalizedText(language, "Orduutmaning", "Words Challenge"));
@@ -49,6 +49,7 @@ public class Challenge {
         int challengeType = -1;
         try {
             challengeType = scanner.nextInt();
+            scanner.nextLine();
         } catch (InputMismatchException e) {
             System.out.println(getLocalizedText(language, "Ogiltig inmatning. Försök igen.", "Invalid input. Please try again."));
             scanner.nextLine();
@@ -105,6 +106,7 @@ public class Challenge {
             loggedInUser.addPoints(-20);
             System.out.println(getLocalizedText(language, "Felaktigt. Du förlorade 20 poäng.", "Incorrect. You lost 20 points."));
         }
+        userRepository.save(loggedInUser);
 
         System.out.println(getLocalizedText(language, "Dina poäng: ", "Your points: ") + loggedInUser.getPoints());
         System.out.println(getLocalizedText(language, "Tid tagen: ", "Time taken: ") + totalTimeInSeconds + " seconds.");
@@ -167,8 +169,9 @@ public class Challenge {
     }
 
     private String getUserInput() {
-        Scanner scanner = new Scanner(System.in);
-        return scanner.nextLine().trim();
+        Scanner scanner = menu.getScanner();
+        return scanner.nextLine().trim();  // Capture input and trim whitespace
+
     }
 
     private String getLocalizedText(Menu.Language language, String swedish, String english) {
