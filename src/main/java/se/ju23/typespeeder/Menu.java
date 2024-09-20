@@ -209,11 +209,16 @@ public class Menu implements MenuService {
     }
 
     private void startChallenge() {
-        Challenge challenge = new Challenge(entityManager, userRepository, this, userService);
-        System.out.println("loggedInUser before challenge: " + (loggedInUser != null ? loggedInUser.getUsername() : "null"));
-        challenge.startChallenge(language, loggedInUser);
-        System.out.println("loggedInUser after challenge: " + (loggedInUser != null ? loggedInUser.getUsername() : "null"));    }
+        if (loggedInUser == null) {
+            System.out.println("User is not logged in. Cannot start challenge.");
+            return;
+        }
 
+        Challenge challenge = new Challenge(entityManager, userRepository, this, userService);
+        System.out.println("loggedInUser before challenge: " + loggedInUser.getUsername());
+        challenge.startChallenge(language, loggedInUser);
+        System.out.println("loggedInUser after challenge: " + loggedInUser.getUsername());
+    }
     private void displayRanking() {
         List<UserStatistics> rankedUsers = userStatisticsRepository.findAllByOrderByAverageSpeedDesc();
         System.out.println(getLocalizedText("Ranking List (by WPM):", "Rankninglista (efter WPM):"));

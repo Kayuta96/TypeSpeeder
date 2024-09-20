@@ -114,6 +114,7 @@ public class Challenge {
 
         loggedInUser.addPoints(pointsEarned);
         userRepository.save(loggedInUser); // Spara users poäng
+
         //userService.updateUserStatistics(loggedInUser, wordsPerMinute); //Leder till utloggning av användaren
 
         // Visa resultaten
